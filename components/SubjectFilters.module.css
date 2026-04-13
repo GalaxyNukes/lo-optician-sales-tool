@@ -1,0 +1,6 @@
+.row { display: flex; align-items: center; gap: .7rem; padding: .85rem 0 .3rem; flex-wrap: wrap; border-top: 1px solid var(--bdr-l); }
+.label { font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); min-width: 100px; }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.chip { padding: .3rem .8rem; border: 1px solid var(--bdr); border-radius: 100px; font-size: .73rem; font-weight: 400; color: var(--mid); background: transparent; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.chip:hover { border-color: var(--navy); color: var(--navy); }
+.on { background: var(--navy); border-color: var(--navy); color: #fff; }

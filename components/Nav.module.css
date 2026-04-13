@@ -1,0 +1,20 @@
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 0 3.5rem;
+  height: 58px;
+  background: #F1F1F1;
+  border-bottom: 1px solid var(--bdr-l);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.logo { margin-right: auto; display: flex; align-items: center; text-decoration: none; }
+.links { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: 3.5rem; }
+.link { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+.link:hover, .active { color: var(--navy); }
+
+@media (max-width: 700px) {
+  .nav { padding: 0 1.5rem; }
+  .links { gap: 1.5rem; }
+}

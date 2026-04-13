@@ -1,0 +1,42 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FBFBFB;
+  --surface: #F5F5F5;
+  --white: #FFFFFF;
+  --navy: #0D2340;
+  --navy-h: #0a1c33;
+  --text: #0D2340;
+  --mid: #4A4A4A;
+  --muted: #888884;
+  --bdr: #D4D0C8;
+  --bdr-l: #E0DDD6;
+  --cu: #D8D4CC;
+  --gn: #1A9E7E;
+  --gn-bg: rgba(26,158,126,.10);
+  --ge: #2A7EC8;
+  --ge-bg: rgba(42,126,200,.10);
+  --gr: #8B5E2A;
+  --gr-bg: rgba(139,94,42,.10);
+  --font: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  padding: 0 3.5rem 5rem;
+}
+
+img { display: block; max-width: 100%; }
+button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: var(--font); }
+
+@media (max-width: 700px) {
+  .page { padding: 0 1.5rem 5rem; }
+}

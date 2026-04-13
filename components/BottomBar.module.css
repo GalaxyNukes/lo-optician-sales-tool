@@ -1,0 +1,8 @@
+.bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(241,241,241,.97); backdrop-filter: blur(10px); border-top: 1px solid var(--bdr); padding: .85rem 3.5rem; display: flex; align-items: center; justify-content: flex-end; gap: .75rem; z-index: 30; animation: slideUp .28s ease; }
+.count { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mid); margin-right: auto; }
+.reset { width: 38px; height: 38px; background: #C0392B; border: none; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background .18s; }
+.reset:hover { background: #A93226; }
+.cta { background: var(--navy); color: #fff; font-size: .82rem; font-weight: 500; padding: .68rem 1.75rem; border-radius: 7px; transition: background .18s; letter-spacing: .02em; }
+.cta:hover { background: var(--navy-h); }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (max-width: 700px) { .bar { padding: .75rem 1.5rem; } }

@@ -1,0 +1,62 @@
+.acc { border-bottom: 1px solid var(--bdr); }
+.acc:first-child { border-top: 1px solid var(--bdr); }
+.header { display: flex; align-items: center; padding: 1.15rem 0; cursor: pointer; user-select: none; gap: .6rem; }
+.num { font-size: .72rem; font-weight: 600; letter-spacing: .04em; color: var(--muted); min-width: 14px; }
+.question { font-size: .8rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text); flex: 1; }
+.answered { font-size: .76rem; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.arrow { color: var(--muted); transition: transform .3s; display: flex; align-items: center; flex-shrink: 0; }
+.open .arrow { transform: rotate(180deg); }
+
+.body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s ease; }
+.open .body { grid-template-rows: 1fr; }
+.inner { overflow: hidden; }
+.content { padding: .25rem 0 1.5rem; }
+
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
+
+.card {
+  background: var(--cu);
+  border-radius: 9px;
+  padding: 1rem .9rem .85rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background .18s, border-color .18s, transform .15s;
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.card:hover { background: #C8C4BC; transform: translateY(-1px); }
+.on { background: var(--navy); border-color: rgba(255,255,255,.15); }
+.cardIcon { width: 18px; height: 18px; margin-bottom: .6rem; flex-shrink: 0; }
+.cardLabel { font-size: .8rem; font-weight: 400; color: #3A3630; line-height: 1.3; }
+.on .cardLabel { color: #fff; }
+
+.badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: #C0392B;
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--cu);
+}
+
+/* custom action field */
+.customField { display: flex; gap: .75rem; align-items: flex-end; flex-wrap: wrap; margin-top: 1rem; padding: 1.1rem 1.25rem; background: #fff; border: 1px solid var(--bdr); border-radius: 10px; }
+.customInner { display: flex; flex-direction: column; gap: .38rem; flex: 1; min-width: 220px; }
+.customLabel { font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.customInput { width: 100%; padding: .65rem .85rem; font-size: .85rem; color: var(--text); border: 1px solid var(--bdr); border-radius: 7px; background: var(--bg); outline: none; transition: border-color .15s; }
+.customInput:focus { border-color: var(--navy); }
+.customBtn { padding: .65rem 1.4rem; background: var(--navy); color: #fff; font-size: .82rem; font-weight: 500; border-radius: 7px; border: none; cursor: pointer; transition: background .15s; white-space: nowrap; flex-shrink: 0; }
+.customBtn:hover { background: var(--navy-h); }
+.customBtn:disabled { opacity: .38; cursor: not-allowed; }
+
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
