@@ -145,7 +145,7 @@ function PeriodFields({
   onStart: (value: string) => void
   onEnd: (value: string) => void
 }) {
-  const { copy, briefingOptions } = useI18n()
+  const { copy } = useI18n()
   return (
     <Field label={label}>
       <div className={styles.periodGrid}>
@@ -219,7 +219,7 @@ function BlockContent({
   data: Record<string, BriefingValue>
   onChange: (key: string, value: BriefingValue) => void
 }) {
-  const { copy } = useI18n()
+  const { copy, briefingOptions } = useI18n()
   const str = (key: string) => typeof data[key] === 'string' ? data[key] as string : ''
   const arr = (key: string) => isStringArray(data[key]) ? data[key] : []
   const dims = (key: string) => isDimensionArray(data[key]) ? data[key] : []
