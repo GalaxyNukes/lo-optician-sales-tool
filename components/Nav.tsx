@@ -33,7 +33,7 @@ export function Nav() {
       <a href="/" className={styles.logo}><Logo /></a>
       <div className={styles.links}>
         <a href="/" className={`${styles.link} ${styles.active}`}>Build Your Campaign</a>
-        <a href="/studio" className={styles.link}>Library</a>
+        <a href="/library" className={styles.link}>Library</a>
       </div>
     </nav>
   )
