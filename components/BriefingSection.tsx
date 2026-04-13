@@ -467,7 +467,7 @@ function CampaignBriefingGroup({
                 return (
                   <button key={typeId} className={styles.addBtn} onClick={() => addBlock(typeId)} type="button">
                     <span className={styles.addIcon}>{meta.icon}</span>
-                    <span>
+                    <span className={styles.addText}>
                       <span className={styles.addTitle}>{meta.title}{count > 0 && <span className={styles.addCount}>{count}</span>}</span>
                       <span className={styles.addDesc}>{meta.desc}</span>
                     </span>

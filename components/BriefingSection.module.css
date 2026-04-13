@@ -60,21 +60,25 @@
 .blockBody { padding: 1.5rem 1.4rem 1.75rem; border-top: 1px solid var(--bdr-l); }
 
 /* add panel */
-.addPanel { border: 1.5px dashed var(--bdr); border-radius: 10px; padding: 1.1rem 1.25rem; margin-top: 1.25rem; }
-.addLabel { font-size: .65rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
+.addPanel { border: 1.5px dashed var(--bdr); border-radius: 10px; padding: 1.25rem 1.35rem 1.4rem; margin-top: 1.25rem; }
+.addLabel { font-size: .65rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .95rem; display: flex; align-items: center; gap: .5rem; }
 .addLabel::after { content: ''; flex: 1; height: 1px; background: var(--bdr-l); }
-.addGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: .45rem; }
-.addBtn { display: flex; align-items: center; gap: .55rem; padding: .55rem .8rem; border: 1px solid var(--bdr); border-radius: 7px; background: #fff; cursor: pointer; transition: border-color .15s, transform .12s; text-align: left; }
-.addBtn:hover { border-color: var(--navy); transform: translateY(-1px); }
-.addIcon { font-size: 1rem; flex-shrink: 0; }
-.addTitle { font-size: .78rem; font-weight: 500; color: var(--navy); display: block; }
-.addDesc { font-size: .66rem; color: var(--muted); display: block; }
+.addGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; }
+.addBtn { display: flex; align-items: flex-start; gap: .8rem; padding: .9rem 1rem; border: 1px solid var(--bdr); border-radius: 9px; background: #fff; cursor: pointer; transition: border-color .15s, transform .12s, box-shadow .15s; text-align: left; min-height: 118px; }
+.addBtn:hover { border-color: var(--navy); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(13,35,64,.06); }
+.addIcon { font-size: 1.05rem; flex-shrink: 0; width: 22px; display: flex; align-items: center; justify-content: center; margin-top: .08rem; }
+.addText { display: flex; flex-direction: column; gap: .32rem; min-width: 0; }
+.addTitle { font-size: .88rem; font-weight: 500; color: var(--navy); display: block; line-height: 1.25; }
+.addDesc { font-size: .72rem; color: var(--muted); display: block; line-height: 1.38; }
 .addCount { font-size: .62rem; background: var(--navy); color: #fff; border-radius: 100px; padding: .1rem .42rem; margin-left: .3rem; font-weight: 600; vertical-align: middle; }
 
 @media (max-width: 700px) {
   .row2 { grid-template-columns: 1fr; }
   .periodGrid { grid-template-columns: 1fr; }
   .wrap { padding: 1.5rem; }
+  .addPanel { padding: 1rem; }
+  .addGrid { grid-template-columns: 1fr; gap: .55rem; }
+  .addBtn { min-height: 0; padding: .8rem .9rem; }
 }
 
 /* ── Per-campaign briefing groups ─────────────────────────────────────────── */
