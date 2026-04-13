@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import type { Goal, Action, Need, Subject, Campaign } from './types'
+import { useI18n } from './i18n'
 import { Nav } from './Nav'
 import { ClientStep } from './ClientStep'
 import { SelectionStep } from './SelectionStep'
@@ -102,6 +103,8 @@ interface Props {
 }
 
 export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, isDraftMode }: Props) {
+  const { copy, translateScope } = useI18n()
+
   // Client info
   const [clientReady, setClientReady] = useState(false)
   const [clientName, setClientName] = useState('')
@@ -113,7 +116,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const [selAction, setSelAction] = useState<Action | null>(null)
   const [customAction, setCustomAction] = useState('')
   const [actionValidUntil, setActionValidUntil] = useState('')
-  const [actionScope, setActionScope] = useState('')
+  const [actionScope, setActionScope] = useState<'store' | 'online' | 'na' | ''>('')
   const [selNeeds, setSelNeeds] = useState<Need[]>([])
   const [selSubjects, setSelSubjects] = useState<Subject[]>([])
 
@@ -197,11 +200,11 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
     <>
       {isDraftMode && (
         <div style={{ background: '#E8950A', color: '#000', padding: '.5rem 3.5rem', fontSize: '.75rem', fontWeight: 600 }}>
-          📝 Draft preview mode — <a href="/api/exit-draft" style={{ color: '#000', textDecoration: 'underline' }}>Exit preview</a>
+          📝 {copy.preview.banner} — <a href="/api/exit-draft" style={{ color: '#000', textDecoration: 'underline' }}>{copy.preview.exit}</a>
         </div>
       )}
 
-      <Nav />
+      <Nav activePage="builder" />
 
       <div className="page">
         <ClientStep
@@ -212,7 +215,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
         {clientReady && (
           <SelectionStep
             stepNumber={1}
-            question="Wat is het doel van de marketing?"
+            question={copy.steps.goalQuestion}
             items={goals.map(g => ({ id: g._id, label: g.label, icon: g.icon }))}
             selected={selGoal ? [selGoal._id] : []}
             multiSelect={false}
@@ -234,32 +237,38 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
         {selGoal && (
           <SelectionStep
             stepNumber={2}
-            question="Welke acties zijn hier aan verbonden?"
+            question={copy.steps.actionQuestion}
             items={actions.map(a => ({ id: a._id, label: a.label, icon: a.icon, isCustom: a.isCustom }))}
             selected={selAction ? [selAction._id] : []}
             multiSelect={false}
             closeOnSelect={false}
+            isComplete={isActionReady}
+            collapseWhenComplete={true}
             answeredLabel={selAction ? [
               selAction.isCustom && customAction ? customAction : selAction.label,
-              actionValidUntil ? `geldig t/m ${actionValidUntil}` : '',
-              actionScope,
+              actionValidUntil ? `${copy.summary.validUntil.toLowerCase()} ${actionValidUntil}` : '',
+              actionScope ? translateScope(actionScope) : '',
             ].filter(Boolean).join(' / ') : undefined}
             customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction } : undefined}
             followUpFields={selAction ? [
               {
-                label: 'Tot wanneer is de actie geldig?',
+                label: copy.steps.validUntil,
                 type: 'date' as const,
                 value: actionValidUntil,
                 onChange: setActionValidUntil,
               },
               ...(actionValidUntil ? [{
-                label: 'Is de actie enkel geldig in de winkel of ook online?',
+                label: copy.steps.scopeQuestion,
                 type: 'select' as const,
                 value: actionScope,
-                options: ['Enkel in de winkel', 'Ook online'],
-                onChange: setActionScope,
+                options: [
+                  { value: 'store', label: copy.steps.scope.store },
+                  { value: 'online', label: copy.steps.scope.online },
+                ],
+                onChange: (value: string) => setActionScope(value as 'store' | 'online'),
               }] : []),
             ] : undefined}
+            followUpAction={selAction && actionValidUntil ? { label: copy.common.notApplicable, onClick: () => setActionScope('na') } : undefined}
             onSelect={(id) => {
               const a = actions.find(a => a._id === id) || null
               const didChange = a?._id !== selAction?._id
@@ -276,7 +285,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
         {isActionReady && (
           <SelectionStep
             stepNumber={3}
-            question="Wat heb je nodig?"
+            question={copy.steps.needQuestion}
             items={needs.map(n => ({ id: n._id, label: n.label, icon: n.icon }))}
             selected={selNeeds.map(n => n._id)}
             multiSelect={true}

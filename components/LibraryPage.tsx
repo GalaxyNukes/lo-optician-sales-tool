@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { Logo } from './Logo'
+import { Nav } from './Nav'
+import { useI18n } from './i18n'
 import type { Campaign, Subject } from './types'
 import styles from './LibraryPage.module.css'
 
@@ -17,6 +17,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 // ── Horizontal detail overlay ─────────────────────────────────────────────────
 function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: () => void }) {
+  const { copy, translateCampaignType } = useI18n()
   const [activeImg, setActiveImg] = useState(0)
   const imgs = c.mockups?.filter(Boolean).length ? c.mockups : [c.thumbnail].filter(Boolean)
   const typeColor = TYPE_COLORS[c.type] || '#0D2340'
@@ -45,7 +46,7 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
               <Image src={imgs[activeImg]} alt={c.title} fill sizes="50vw" className={styles.overlayImg} priority />
             )}
             {/* Type badge */}
-            <span className={styles.overlayTypeBadge} style={{ background: typeColor }}>{c.type}</span>
+            <span className={styles.overlayTypeBadge} style={{ background: typeColor }}>{translateCampaignType(c.type)}</span>
             {/* Gallery arrows */}
             {imgs.length > 1 && (
               <>
@@ -93,7 +94,7 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
           {/* Formats */}
           {c.formats?.length > 0 && (
             <div className={styles.overlaySection}>
-              <div className={styles.overlaySectionLabel}>Formats inbegrepen</div>
+              <div className={styles.overlaySectionLabel}>{copy.detail.includedFormats}</div>
               <div className={styles.overlayFormats}>
                 {c.formats.map(f => <span key={f} className={styles.overlayFormat}>{f}</span>)}
               </div>
@@ -103,7 +104,7 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
           {/* Goals */}
           {c.goals?.length > 0 && (
             <div className={styles.overlaySection}>
-              <div className={styles.overlaySectionLabel}>Doelstellingen</div>
+              <div className={styles.overlaySectionLabel}>{copy.detail.goals}</div>
               <div className={styles.overlayGoals}>
                 {c.goals.map(g => <span key={g._id} className={styles.overlayGoal}>{g.label}</span>)}
               </div>
@@ -124,6 +125,7 @@ function CampaignCard({ campaign: c, size, index, onClick }: {
   index: number
   onClick: () => void
 }) {
+  const { translateCampaignType } = useI18n()
   const typeColor = TYPE_COLORS[c.type] || '#0D2340'
 
   return (
@@ -147,7 +149,7 @@ function CampaignCard({ campaign: c, size, index, onClick }: {
       {/* Content */}
       <div className={styles.cardBody}>
         <div className={styles.cardTop}>
-          <span className={styles.cardType} style={{ color: typeColor }}>{c.type}</span>
+          <span className={styles.cardType} style={{ color: typeColor }}>{translateCampaignType(c.type)}</span>
           {c.visualStyle && <span className={styles.cardStyle}>{c.visualStyle.label}</span>}
         </div>
         <div className={styles.cardBottom}>
@@ -195,6 +197,7 @@ interface Props {
 const ALL_TYPES = ['CAMPAIGN', 'MEDIA KIT', 'MOCKUP', 'LANDING PAGE']
 
 export function LibraryPage({ campaigns, subjects }: Props) {
+  const { copy, translateCampaignType } = useI18n()
   const [selSubject, setSelSubject] = useState<string | null>(null)
   const [selType, setSelType]       = useState<string | null>(null)
   const [detail, setDetail]         = useState<Campaign | null>(null)
@@ -209,14 +212,7 @@ export function LibraryPage({ campaigns, subjects }: Props) {
 
   return (
     <div className={styles.page}>
-      {/* Nav — same as main tool */}
-      <nav className={styles.nav}>
-        <Link href="/" className={styles.navLogo}><Logo fill="#0D2340" height={22} /></Link>
-        <div className={styles.navLinks}>
-          <Link href="/" className={styles.navLink}>Build Your Campaign</Link>
-          <span className={`${styles.navLink} ${styles.navLinkActive}`}>Library</span>
-        </div>
-      </nav>
+      <Nav activePage="library" />
 
       {/* Filter bar — directly below nav */}
       <div className={styles.filterBar}>
@@ -227,7 +223,7 @@ export function LibraryPage({ campaigns, subjects }: Props) {
               className={`${styles.chip} ${!selType ? styles.chipOn : ''}`}
               onClick={() => setSelType(null)}
             >
-              Alles
+              {copy.filters.all}
             </button>
             {presentTypes.map(t => (
               <button
@@ -236,7 +232,7 @@ export function LibraryPage({ campaigns, subjects }: Props) {
                 onClick={() => setSelType(t === selType ? null : t)}
               >
                 <span className={styles.chipDot} style={{ background: TYPE_COLORS[t] || '#888' }} />
-                {t}
+                {translateCampaignType(t)}
               </button>
             ))}
           </div>
@@ -259,14 +255,14 @@ export function LibraryPage({ campaigns, subjects }: Props) {
             </>
           )}
 
-          <span className={styles.filterCount}>{filtered.length} campagnes</span>
+          <span className={styles.filterCount}>{copy.library.campaignCount(filtered.length)}</span>
         </div>
       </div>
 
       {/* Bento grid */}
       <main className={styles.bento}>
         {filtered.length === 0 ? (
-          <div className={styles.empty}>Geen campagnes gevonden. Pas de filters aan.</div>
+          <div className={styles.empty}>{copy.filters.noCampaigns}</div>
         ) : (
           filtered.map((c, i) => (
             <CampaignCard

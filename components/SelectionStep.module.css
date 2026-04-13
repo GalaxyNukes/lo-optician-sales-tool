@@ -60,6 +60,9 @@
 .customBtn:hover { background: var(--navy-h); }
 .customBtn:disabled { opacity: .38; cursor: not-allowed; }
 .followUpStack { display: flex; flex-direction: column; gap: 0; }
+.followUpActions { display: flex; justify-content: flex-start; margin-top: .75rem; }
+.followUpBtn { padding: .62rem 1rem; border: 1px solid var(--bdr); border-radius: 7px; background: #fff; color: var(--navy); font-size: .8rem; font-weight: 500; transition: all .15s; }
+.followUpBtn:hover { border-color: var(--navy); background: rgba(13,35,64,.04); }
 
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }

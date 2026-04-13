@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useI18n } from './i18n'
 import type { Campaign } from './types'
 import styles from './DetailOverlay.module.css'
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function DetailOverlay({ campaign: c, isSelected, onToggle, onClose }: Props) {
+  const { copy, translateCampaignType } = useI18n()
   const [activeImg, setActiveImg] = useState(0)
   const imgs = c.mockups?.length ? c.mockups : [c.thumbnail]
 
@@ -31,21 +33,21 @@ export function DetailOverlay({ campaign: c, isSelected, onToggle, onClose }: Pr
         <div className={styles.inner}>
           {/* Left: info */}
           <div className={styles.left}>
-            <div className={styles.type}>{c.type}</div>
+            <div className={styles.type}>{translateCampaignType(c.type)}</div>
             <h2 className={styles.title}>{c.title}</h2>
             <p className={styles.desc}>{c.description}</p>
 
             <div className={styles.meta}>
-              <div className={styles.metaItem}><span className={styles.metaLabel}>Type</span><span className={styles.metaVal}>{c.type}</span></div>
-              {c.visualStyle && <div className={styles.metaItem}><span className={styles.metaLabel}>Visual style</span><span className={styles.metaVal}>{c.visualStyle.label}</span></div>}
-              <div className={styles.metaItem}><span className={styles.metaLabel}>Formaten</span><span className={styles.metaVal}>{c.formats.length} items</span></div>
-              {c.season && <div className={styles.metaItem}><span className={styles.metaLabel}>Seizoen</span><span className={styles.metaVal}>{c.season}</span></div>}
+              <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.type}</span><span className={styles.metaVal}>{translateCampaignType(c.type)}</span></div>
+              {c.visualStyle && <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.visualStyle}</span><span className={styles.metaVal}>{c.visualStyle.label}</span></div>}
+              <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.formats}</span><span className={styles.metaVal}>{c.formats.length} {copy.detail.items}</span></div>}
+              {c.season && <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.season}</span><span className={styles.metaVal}>{c.season}</span></div>}
             </div>
 
-            <div className={styles.sectionLabel}>Formats inbegrepen</div>
+            <div className={styles.sectionLabel}>{copy.detail.includedFormats}</div>
             <div className={styles.tags}>{c.formats.map(f => <span key={f} className={styles.tag}>{f}</span>)}</div>
 
-            <div className={styles.sectionLabel}>Doelstellingen</div>
+            <div className={styles.sectionLabel}>{copy.detail.goals}</div>
             <div className={styles.goals}>{c.goals.map(g => <span key={g._id} className={styles.goal}>{g.label}</span>)}</div>
 
             <div className={styles.cta}>
@@ -53,9 +55,9 @@ export function DetailOverlay({ campaign: c, isSelected, onToggle, onClose }: Pr
                 className={`${styles.btnPri} ${isSelected ? styles.added : ''}`}
                 onClick={onToggle}
               >
-                {isSelected ? '✓ Toegevoegd aan pakket' : 'Toevoegen aan pakket'}
+                {isSelected ? copy.detail.added : copy.detail.add}
               </button>
-              <button className={styles.btnSec} onClick={onClose}>Sluiten</button>
+              <button className={styles.btnSec} onClick={onClose}>{copy.detail.close}</button>
             </div>
           </div>
 
@@ -69,7 +71,7 @@ export function DetailOverlay({ campaign: c, isSelected, onToggle, onClose }: Pr
               <div className={styles.thumbs}>
                 {imgs.map((url, i) => (
                   <div key={i} className={`${styles.thumb} ${i === activeImg ? styles.thumbActive : ''}`} onClick={() => setActiveImg(i)}>
-                    <Image src={url} alt={`Mockup ${i + 1}`} fill sizes="15vw" className={styles.thumbImg} />
+                    <Image src={url} alt={copy.detail.mockupAlt(i + 1)} fill sizes="15vw" className={styles.thumbImg} />
                   </div>
                 ))}
               </div>

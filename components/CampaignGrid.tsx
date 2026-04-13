@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useI18n } from './i18n'
 import type { Campaign } from './types'
 import styles from './CampaignGrid.module.css'
 
@@ -18,8 +19,10 @@ interface Props {
 }
 
 export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
+  const { copy, translateCampaignType } = useI18n()
+
   if (campaigns.length === 0) {
-    return <div className={styles.empty}>Geen assets gevonden. Pas de filters aan.</div>
+    return <div className={styles.empty}>{copy.filters.noAssets}</div>
   }
 
   return (
@@ -45,10 +48,10 @@ export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
                   className={styles.img}
                 />
                 <div className={styles.badges}>
-                  <span className={styles.typeBadge}>{c.type}</span>
+                  <span className={styles.typeBadge}>{translateCampaignType(c.type)}</span>
                   <button
                     className={`${styles.check} ${isSel ? styles.ticked : ''}`}
-                    title="Toevoegen aan pakket"
+                    title={copy.detail.add}
                     onClick={e => { e.stopPropagation(); onToggle(c) }}
                   >
                     {isSel && CHECK_ICON}
@@ -80,7 +83,7 @@ export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
                     <span key={g._id} className={styles.goal}>{g.label}</span>
                   ))}
                 </div>
-                <span className={styles.bekijk}>Bekijk →</span>
+                <span className={styles.bekijk}>{copy.filters.view}</span>
               </div>
             </div>
           )

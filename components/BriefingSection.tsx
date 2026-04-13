@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
+import { useI18n } from './i18n'
 import type { Campaign } from './types'
 import { BLOCK_META } from './types'
 import type {
@@ -45,22 +46,31 @@ function Inp({ value, onChange, placeholder, type = 'text' }: { value: string; o
   return <input className={styles.input} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
 }
 
-function Sel({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+function Sel({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  const { copy } = useI18n()
   return (
     <select className={styles.select} value={value} onChange={e => onChange(e.target.value)}>
-      <option value="">Kies...</option>
-      {options.map(option => <option key={option} value={option}>{option}</option>)}
+      <option value="">{copy.common.chooseShort}</option>
+      {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
   )
 }
 
-function CheckList({ platforms, selected, onToggle }: { platforms: string[]; selected: string[]; onToggle: (p: string) => void }) {
+function CheckList({
+  platforms,
+  selected,
+  onToggle,
+}: {
+  platforms: { value: string; label: string }[]
+  selected: string[]
+  onToggle: (p: string) => void
+}) {
   return (
     <div className={styles.checkList}>
       {platforms.map(platform => (
-        <label key={platform} className={`${styles.checkRow} ${selected.includes(platform) ? styles.checked : ''}`} onClick={() => onToggle(platform)}>
+        <label key={platform.value} className={`${styles.checkRow} ${selected.includes(platform.value) ? styles.checked : ''}`} onClick={() => onToggle(platform.value)}>
           <span className={styles.checkBox} />
-          <span className={styles.checkLabel}>{platform}</span>
+          <span className={styles.checkLabel}>{platform.label}</span>
         </label>
       ))}
     </div>
@@ -68,6 +78,7 @@ function CheckList({ platforms, selected, onToggle }: { platforms: string[]; sel
 }
 
 function UploadZone() {
+  const { copy } = useI18n()
   const [previews, setPreviews] = useState<string[]>([])
   const ref = useRef<HTMLInputElement>(null)
 
@@ -96,8 +107,8 @@ function UploadZone() {
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M7 1v8M3 5l4-4 4 4M1 11h12" stroke="var(--navy)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span><strong>Klik om te uploaden</strong> of sleep hier naartoe</span>
-        <span className={styles.uploadHint}>JPG, PNG — max. 10MB</span>
+        <span><strong>{copy.briefing.uploadTitle}</strong>{copy.briefing.uploadRest}</span>
+        <span className={styles.uploadHint}>{copy.briefing.uploadHint}</span>
       </div>
       <input
         ref={ref}
@@ -134,15 +145,16 @@ function PeriodFields({
   onStart: (value: string) => void
   onEnd: (value: string) => void
 }) {
+  const { copy, briefingOptions } = useI18n()
   return (
     <Field label={label}>
       <div className={styles.periodGrid}>
         <div className={styles.periodField}>
-          <span className={styles.periodLabel}>Van</span>
+          <span className={styles.periodLabel}>{copy.briefing.from}</span>
           <Inp value={startValue} onChange={onStart} type="date" />
         </div>
         <div className={styles.periodField}>
-          <span className={styles.periodLabel}>Tot</span>
+          <span className={styles.periodLabel}>{copy.briefing.until}</span>
           <Inp value={endValue} onChange={onEnd} type="date" />
         </div>
       </div>
@@ -159,6 +171,7 @@ function DimensionList({
   entries: DimensionEntry[]
   onChange: (entries: DimensionEntry[]) => void
 }) {
+  const { copy } = useI18n()
   const rows = entries.length ? entries : [EMPTY_DIMENSION]
 
   const updateEntry = (index: number, key: keyof DimensionEntry, value: string) => {
@@ -190,7 +203,7 @@ function DimensionList({
           </div>
         ))}
         <button className={styles.dimensionAdd} onClick={addEntry} type="button">
-          + Voeg formaat toe
+          {copy.briefing.addFormat}
         </button>
       </div>
     </Field>
@@ -206,6 +219,7 @@ function BlockContent({
   data: Record<string, BriefingValue>
   onChange: (key: string, value: BriefingValue) => void
 }) {
+  const { copy } = useI18n()
   const str = (key: string) => typeof data[key] === 'string' ? data[key] as string : ''
   const arr = (key: string) => isStringArray(data[key]) ? data[key] : []
   const dims = (key: string) => isDimensionArray(data[key]) ? data[key] : []
@@ -218,11 +232,11 @@ function BlockContent({
   if (typeId === 'af-sticker') {
     return (
       <div className={styles.blockBody}>
-        <Field label="Foto's etalage / winkelgevel"><UploadZone /></Field>
-        <DimensionList label="Etalageraam" entries={dims('windowSizes')} onChange={value => onChange('windowSizes', value)} />
-        <DimensionList label="Deur" entries={dims('doorSizes')} onChange={value => onChange('doorSizes', value)} />
-        <Field label="Opmerkingen">
-          <textarea className={styles.textarea} value={str('notes')} onChange={e => onChange('notes', e.target.value)} placeholder="Bijv. raam is gebogen of deurlijst is zichtbaar..." />
+        <Field label={copy.briefing.fields.storefrontPhotos}><UploadZone /></Field>
+        <DimensionList label={copy.briefing.fields.window} entries={dims('windowSizes')} onChange={value => onChange('windowSizes', value)} />
+        <DimensionList label={copy.briefing.fields.door} entries={dims('doorSizes')} onChange={value => onChange('doorSizes', value)} />
+        <Field label={copy.briefing.fields.notes}>
+          <textarea className={styles.textarea} value={str('notes')} onChange={e => onChange('notes', e.target.value)} placeholder={copy.briefing.placeholders.stickerNotes} />
         </Field>
       </div>
     )
@@ -232,7 +246,7 @@ function BlockContent({
     return (
       <div className={styles.blockBody}>
         <div className={styles.row2}>
-          <Field label="Formaat (cm)">
+          <Field label={copy.briefing.fields.bannerSize}>
             <div className={styles.dimRow}>
               <Inp value={str('banW')} onChange={set('banW')} placeholder="B" type="number" />
               <span className={styles.dimX}>×</span>
@@ -240,14 +254,14 @@ function BlockContent({
               <span className={styles.dimUnit}>cm</span>
             </div>
           </Field>
-          <Field label="Materiaal">
-            <Sel value={str('material')} onChange={set('material')} options={['Spandoek PVC', 'Textiel banner', 'Vlag (wimpel)', 'Lichtbak folie', 'Nog niet bepaald']} />
+          <Field label={copy.briefing.fields.material}>
+            <Sel value={str('material')} onChange={set('material')} options={briefingOptions.bannerMaterials} />
           </Field>
         </div>
-        <Field label="Wat zijn je design wensen (niet)?">
-          <textarea className={styles.textarea} value={str('designWishes')} onChange={e => onChange('designWishes', e.target.value)} placeholder="Bijv. strak en minimalistisch, geen drukke achtergronden..." />
+        <Field label={copy.briefing.fields.designWishes}>
+          <textarea className={styles.textarea} value={str('designWishes')} onChange={e => onChange('designWishes', e.target.value)} placeholder={copy.briefing.placeholders.bannerDesignWishes} />
         </Field>
-        <Field label="Locatiefoto's"><UploadZone /></Field>
+        <Field label={copy.briefing.fields.locationPhotos}><UploadZone /></Field>
       </div>
     )
   }
@@ -256,22 +270,22 @@ function BlockContent({
     return (
       <div className={styles.blockBody}>
         <div className={styles.row2}>
-          <Field label="Papierformaat">
-            <Sel value={str('paper')} onChange={set('paper')} options={['A6 (flyer)', 'A5', 'A4', 'A3', 'A2', 'A1', 'Aangepast formaat']} />
+          <Field label={copy.briefing.fields.paper}>
+            <Sel value={str('paper')} onChange={set('paper')} options={briefingOptions.printPaper} />
           </Field>
-          <Field label="Oplage">
-            <Inp value={str('qty')} onChange={set('qty')} placeholder="Bijv. 500" type="number" />
+          <Field label={copy.briefing.fields.quantity}>
+            <Inp value={str('qty')} onChange={set('qty')} placeholder={copy.briefing.placeholders.printQuantity} type="number" />
           </Field>
         </div>
         <div className={styles.row2}>
-          <Field label="Oriëntatie">
-            <Sel value={str('orientation')} onChange={set('orientation')} options={['Verticaal', 'Horizontaal']} />
+          <Field label={copy.briefing.fields.orientation}>
+            <Sel value={str('orientation')} onChange={set('orientation')} options={briefingOptions.orientation} />
           </Field>
         </div>
-        <Field label="Wat zijn je design wensen (niet)?">
-          <textarea className={styles.textarea} value={str('designWishes')} onChange={e => onChange('designWishes', e.target.value)} placeholder="Bijv. veel witruimte, zeker geen prijsexplosies..." />
+        <Field label={copy.briefing.fields.designWishes}>
+          <textarea className={styles.textarea} value={str('designWishes')} onChange={e => onChange('designWishes', e.target.value)} placeholder={copy.briefing.placeholders.printDesignWishes} />
         </Field>
-        <Field label="Referentieafbeeldingen"><UploadZone /></Field>
+        <Field label={copy.briefing.fields.references}><UploadZone /></Field>
       </div>
     )
   }
@@ -279,17 +293,17 @@ function BlockContent({
   if (typeId === 'af-social') {
     return (
       <div className={styles.blockBody}>
-        <Field label="Platformen">
-          <CheckList platforms={['Instagram (post + story)', 'Facebook', 'LinkedIn', 'TikTok', 'Google Display Ads']} selected={arr('platforms')} onToggle={togglePlatform} />
+        <Field label={copy.briefing.fields.platforms}>
+          <CheckList platforms={briefingOptions.socialPlatforms} selected={arr('platforms')} onToggle={togglePlatform} />
         </Field>
         <PeriodFields
-          label="Wat is de periode van de campagne?"
+          label={copy.briefing.fields.campaignPeriod}
           startValue={str('periodStart')}
           endValue={str('periodEnd')}
           onStart={set('periodStart')}
           onEnd={set('periodEnd')}
         />
-        <Field label="Referentieafbeeldingen"><UploadZone /></Field>
+        <Field label={copy.briefing.fields.references}><UploadZone /></Field>
       </div>
     )
   }
@@ -298,8 +312,8 @@ function BlockContent({
     return (
       <div className={styles.blockBody}>
         <div className={styles.row2}>
-          <Field label="Website URL"><Inp value={str('website')} onChange={set('website')} placeholder="https://..." type="url" /></Field>
-          <Field label="Subpagina"><Inp value={str('domain')} onChange={set('domain')} placeholder="/zomer-actie" /></Field>
+          <Field label={copy.briefing.fields.websiteUrl}><Inp value={str('website')} onChange={set('website')} placeholder="https://..." type="url" /></Field>
+          <Field label={copy.briefing.fields.subpage}><Inp value={str('domain')} onChange={set('domain')} placeholder={copy.briefing.placeholders.landingSubpage} /></Field>
         </div>
       </div>
     )
@@ -309,7 +323,7 @@ function BlockContent({
     return (
       <div className={styles.blockBody}>
         <PeriodFields
-          label="Wat is de periode van de campagne?"
+          label={copy.briefing.fields.campaignPeriod}
           startValue={str('periodStart')}
           endValue={str('periodEnd')}
           onStart={set('periodStart')}
@@ -323,23 +337,23 @@ function BlockContent({
     return (
       <div className={styles.blockBody}>
         <div className={styles.row2}>
-          <Field label="Type video">
-            <Sel value={str('vtype')} onChange={set('vtype')} options={['Campagnevideo (winkel)', 'Lifestyle / algemeen', 'Product showcase', 'Social media Reel']} />
+          <Field label={copy.briefing.fields.videoType}>
+            <Sel value={str('vtype')} onChange={set('vtype')} options={briefingOptions.videoTypes} />
           </Field>
-          <Field label="Duur">
-            <Sel value={str('vlen')} onChange={set('vlen')} options={['15 seconden', '30 seconden', '60 seconden', '+1 minuut']} />
+          <Field label={copy.briefing.fields.duration}>
+            <Sel value={str('vlen')} onChange={set('vlen')} options={briefingOptions.videoDurations} />
           </Field>
         </div>
         <div className={styles.row2}>
-          <Field label="Scherm oriëntatie">
-            <Sel value={str('orientation')} onChange={set('orientation')} options={['Verticaal', 'Horizontaal']} />
+          <Field label={copy.briefing.fields.screenOrientation}>
+            <Sel value={str('orientation')} onChange={set('orientation')} options={briefingOptions.orientation} />
           </Field>
-          <Field label="Speciale formaten">
-            <Inp value={str('specialFormats')} onChange={set('specialFormats')} placeholder="Indien van toepassing" />
+          <Field label={copy.briefing.fields.specialFormats}>
+            <Inp value={str('specialFormats')} onChange={set('specialFormats')} placeholder={copy.briefing.placeholders.specialFormats} />
           </Field>
         </div>
-        <Field label="Waar zal de video getoond worden">
-          <Inp value={str('placement')} onChange={set('placement')} placeholder="Bijv. etalagescherm, wachtzaal, social ads..." />
+        <Field label={copy.briefing.fields.whereShown}>
+          <Inp value={str('placement')} onChange={set('placement')} placeholder={copy.briefing.placeholders.videoPlacement} />
         </Field>
       </div>
     )
@@ -348,14 +362,14 @@ function BlockContent({
   if (typeId === 'af-other') {
     return (
       <div className={styles.blockBody}>
-        <Field label="Beschrijf wat je nodig hebt">
-          <textarea className={styles.textarea} value={str('request')} onChange={e => onChange('request', e.target.value)} placeholder="Controleer eerst of de deliverable niet in het keuzemenu staat." />
+        <Field label={copy.briefing.fields.describeNeed}>
+          <textarea className={styles.textarea} value={str('request')} onChange={e => onChange('request', e.target.value)} placeholder={copy.briefing.placeholders.otherNeed} />
         </Field>
-        <Field label="Indien je voorbeelden of foto's hebt, voeg deze dan toe aan de taak">
+        <Field label={copy.briefing.fields.examples}>
           <UploadZone />
         </Field>
-        <Field label="Geef meer informatie">
-          <textarea className={styles.textarea} value={str('extraInfo')} onChange={e => onChange('extraInfo', e.target.value)} placeholder="Extra context, plaatsing, timing of aandachtspunten..." />
+        <Field label={copy.briefing.fields.extraInfo}>
+          <textarea className={styles.textarea} value={str('extraInfo')} onChange={e => onChange('extraInfo', e.target.value)} placeholder={copy.briefing.placeholders.otherExtraInfo} />
         </Field>
       </div>
     )
@@ -375,22 +389,24 @@ function BriefingBlock({
   onChange: (key: string, value: BriefingValue) => void
   onDelete: () => void
 }) {
+  const { translateBlockMeta, copy } = useI18n()
   const [open, setOpen] = useState(true)
+  const localizedMeta = translateBlockMeta(inst.typeId) || meta
 
   return (
     <div className={styles.block}>
       <div className={styles.blockHead} onClick={() => setOpen(prev => !prev)}>
-        <div className={styles.blockIcon}>{meta.icon}</div>
+        <div className={styles.blockIcon}>{localizedMeta.icon}</div>
         <div className={styles.blockMeta}>
-          <div className={styles.blockTitle}>{meta.title}</div>
-          <div className={styles.blockDesc}>{meta.desc}</div>
+          <div className={styles.blockTitle}>{localizedMeta.title}</div>
+          <div className={styles.blockDesc}>{localizedMeta.desc}</div>
         </div>
         <button className={`${styles.toggle} ${open ? styles.toggleOpen : ''}`} onClick={e => { e.stopPropagation(); setOpen(prev => !prev) }} type="button">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <button className={styles.deleteBtn} onClick={e => { e.stopPropagation(); onDelete() }} title="Verwijder blok" type="button">✕</button>
+        <button className={styles.deleteBtn} onClick={e => { e.stopPropagation(); onDelete() }} title={copy.briefing.deleteBlock} type="button">✕</button>
       </div>
       {open && <BlockContent typeId={inst.typeId} data={inst.data} onChange={onChange} />}
     </div>
@@ -408,6 +424,7 @@ function CampaignBriefingGroup({
   briefing: CampaignBriefing
   onUpdateBriefing: React.Dispatch<React.SetStateAction<CampaignBriefing[]>>
 }) {
+  const { translateCampaignType, translateBlockMeta, copy } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
 
   const updateBlock = (instId: string, key: string, value: BriefingValue) => {
@@ -441,10 +458,10 @@ function CampaignBriefingGroup({
           {campaign.thumbnail && <Image src={campaign.thumbnail} alt={campaign.title} fill sizes="52px" style={{ objectFit: 'cover' }} />}
         </div>
         <div className={styles.campaignHeaderText}>
-          <div className={styles.campaignType}>{campaign.type}</div>
+          <div className={styles.campaignType}>{translateCampaignType(campaign.type)}</div>
           <div className={styles.campaignTitle}>{campaign.title}</div>
         </div>
-        <div className={styles.campaignBlockCount}>{briefing.instances.length} blok{briefing.instances.length !== 1 ? 'ken' : ''}</div>
+        <div className={styles.campaignBlockCount}>{copy.briefing.blockCount(briefing.instances.length)}</div>
         <div className={`${styles.campaignArrow} ${collapsed ? styles.campaignArrowCollapsed : ''}`}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 4.5L7 9.5L12 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -453,23 +470,24 @@ function CampaignBriefingGroup({
       </div>
       {!collapsed && (
         <div className={styles.campaignBody}>
-          {briefing.instances.length === 0 && <div className={styles.emptyBlocks}>Geen blokken. Voeg er een toe hieronder.</div>}
+          {briefing.instances.length === 0 && <div className={styles.emptyBlocks}>{copy.briefing.noBlocks}</div>}
           {briefing.instances.map(instance => {
             const meta = BLOCK_META[instance.typeId]
             if (!meta) return null
             return <BriefingBlock key={instance.id} inst={instance} meta={meta} onChange={(key, value) => updateBlock(instance.id, key, value)} onDelete={() => deleteBlock(instance.id)} />
           })}
           <div className={styles.addPanel}>
-            <div className={styles.addLabel}>Blok toevoegen</div>
+            <div className={styles.addLabel}>{copy.briefing.addBlock}</div>
             <div className={styles.addGrid}>
               {Object.entries(BLOCK_META).map(([typeId, meta]) => {
                 const count = briefing.instances.filter(instance => instance.typeId === typeId).length
+                const localizedMeta = translateBlockMeta(typeId) || meta
                 return (
                   <button key={typeId} className={styles.addBtn} onClick={() => addBlock(typeId)} type="button">
-                    <span className={styles.addIcon}>{meta.icon}</span>
+                    <span className={styles.addIcon}>{localizedMeta.icon}</span>
                     <span className={styles.addText}>
-                      <span className={styles.addTitle}>{meta.title}{count > 0 && <span className={styles.addCount}>{count}</span>}</span>
-                      <span className={styles.addDesc}>{meta.desc}</span>
+                      <span className={styles.addTitle}>{localizedMeta.title}{count > 0 && <span className={styles.addCount}>{count}</span>}</span>
+                      <span className={styles.addDesc}>{localizedMeta.desc}</span>
                     </span>
                   </button>
                 )
@@ -483,6 +501,7 @@ function CampaignBriefingGroup({
 }
 
 export function BriefingSection({ selectedCampaigns, campaignBriefings, sharedFields, onUpdateBriefing, onUpdateShared }: Props) {
+  const { copy } = useI18n()
   const setSharedField = (key: keyof SharedBriefingFields) => (value: string) => onUpdateShared(prev => ({ ...prev, [key]: value }))
 
   return (
@@ -493,22 +512,22 @@ export function BriefingSection({ selectedCampaigns, campaignBriefings, sharedFi
             <path d="M1 3h9M1 6h6M1 9h4" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
           </svg>
         </div>
-        <div className={styles.headerTitle}>Briefing</div>
-        <div className={styles.headerSub}>{selectedCampaigns.length} campagne{selectedCampaigns.length !== 1 ? 's' : ''}</div>
+        <div className={styles.headerTitle}>{copy.briefing.title}</div>
+        <div className={styles.headerSub}>{copy.library.campaignCount(selectedCampaigns.length)}</div>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>Timing & Omschrijving</div>
+        <div className={styles.sectionTitle}>{copy.briefing.timing}</div>
         <div className={styles.row2}>
-          <Field label="Deadline taak *"><input className={styles.input} type="date" value={sharedFields.deadline} onChange={e => setSharedField('deadline')(e.target.value)} /></Field>
-          <Field label="Live datum *"><input className={styles.input} type="date" value={sharedFields.liveDate} onChange={e => setSharedField('liveDate')(e.target.value)} /></Field>
+          <Field label={copy.briefing.deadline}><input className={styles.input} type="date" value={sharedFields.deadline} onChange={e => setSharedField('deadline')(e.target.value)} /></Field>
+          <Field label={copy.briefing.liveDate}><input className={styles.input} type="date" value={sharedFields.liveDate} onChange={e => setSharedField('liveDate')(e.target.value)} /></Field>
         </div>
-        <Field label="Beschrijf in max. 4 woorden *"><input className={styles.input} type="text" value={sharedFields.desc4} onChange={e => setSharedField('desc4')(e.target.value)} placeholder="Bijv. Zomercampagne sportbrillen" /></Field>
-        <Field label="Meer achtergrondinformatie"><textarea className={styles.textarea} value={sharedFields.bgInfo} onChange={e => setSharedField('bgInfo')(e.target.value)} placeholder="Bijv. scherm hangt achter de balie..." /></Field>
-        <Field label="Referentie naar gelijkaardige taak"><input className={styles.input} type="url" value={sharedFields.refUrl} onChange={e => setSharedField('refUrl')(e.target.value)} placeholder="https://..." /></Field>
+        <Field label={copy.briefing.shortDescription}><input className={styles.input} type="text" value={sharedFields.desc4} onChange={e => setSharedField('desc4')(e.target.value)} placeholder={copy.briefing.shortDescriptionPlaceholder} /></Field>
+        <Field label={copy.briefing.backgroundInfo}><textarea className={styles.textarea} value={sharedFields.bgInfo} onChange={e => setSharedField('bgInfo')(e.target.value)} placeholder={copy.briefing.backgroundPlaceholder} /></Field>
+        <Field label={copy.briefing.similarReference}><input className={styles.input} type="url" value={sharedFields.refUrl} onChange={e => setSharedField('refUrl')(e.target.value)} placeholder="https://..." /></Field>
       </div>
 
-      <div className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>Briefing per campagne</div>
+      <div className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>{copy.briefing.perCampaign}</div>
       <div className={styles.campaignGroups}>
         {selectedCampaigns.map((campaign, index) => {
           const briefing = campaignBriefings.find(item => item.campaignId === campaign._id)
@@ -518,7 +537,7 @@ export function BriefingSection({ selectedCampaigns, campaignBriefings, sharedFi
       </div>
 
       <div className={styles.section} style={{ marginTop: '1.5rem' }}>
-        <div className={styles.sectionTitle}>Algemene referentieafbeeldingen</div>
+        <div className={styles.sectionTitle}>{copy.briefing.generalReferences}</div>
         <UploadZone />
       </div>
     </div>

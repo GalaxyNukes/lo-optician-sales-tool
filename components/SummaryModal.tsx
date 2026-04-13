@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import type { Goal, Action, Need, Subject, Campaign } from './types'
 import { BLOCK_META } from './types'
+import { useI18n } from './i18n'
 import { getLogoSvgMarkup } from './Logo'
 import type { BriefingValue, CampaignBriefing, DimensionEntry, SharedBriefingFields } from './CampaignCatalog'
 import styles from './SummaryModal.module.css'
@@ -61,7 +62,11 @@ function formatDimensions(entries: DimensionEntry[]) {
     .join(', ')
 }
 
-function collectFields(inst: { typeId: string; data: Record<string, BriefingValue> }) {
+function collectFields(
+  inst: { typeId: string; data: Record<string, BriefingValue> },
+  copy: ReturnType<typeof useI18n>['copy'],
+  translateBriefingValue: ReturnType<typeof useI18n>['translateBriefingValue']
+) {
   const fields: { label: string; value: string }[] = []
   const data = inst.data
   const str = (key: string) => typeof data[key] === 'string' ? data[key] as string : ''
@@ -70,53 +75,53 @@ function collectFields(inst: { typeId: string; data: Record<string, BriefingValu
   const legacyDims = (widthKey: string, heightKey: string) => str(widthKey) || str(heightKey) ? [{ width: str(widthKey), height: str(heightKey) }] : []
 
   if (inst.typeId === 'af-print') {
-    if (str('paper')) fields.push({ label: 'Papierformaat', value: str('paper') })
-    if (str('qty')) fields.push({ label: 'Oplage', value: str('qty') })
-    if (str('orientation')) fields.push({ label: 'Oriëntatie', value: str('orientation') })
-    if (str('designWishes')) fields.push({ label: 'Design wensen', value: str('designWishes') })
+    if (str('paper')) fields.push({ label: copy.briefing.fields.paper, value: translateBriefingValue('printPaper', str('paper')) })
+    if (str('qty')) fields.push({ label: copy.briefing.fields.quantity, value: str('qty') })
+    if (str('orientation')) fields.push({ label: copy.briefing.fields.orientation, value: translateBriefingValue('orientation', str('orientation')) })
+    if (str('designWishes')) fields.push({ label: copy.briefing.fields.designWishes, value: str('designWishes') })
   }
 
   if (inst.typeId === 'af-social') {
-    if (arr('platforms').length) fields.push({ label: 'Platformen', value: arr('platforms').join(', ') })
+    if (arr('platforms').length) fields.push({ label: copy.briefing.fields.platforms, value: arr('platforms').map(value => translateBriefingValue('socialPlatforms', value)).join(', ') })
     const period = formatPeriod(str('periodStart'), str('periodEnd'))
-    if (period) fields.push({ label: 'Periode', value: period })
+    if (period) fields.push({ label: copy.briefing.fields.campaignPeriod, value: period })
   }
 
   if (inst.typeId === 'af-banner') {
-    if (str('material')) fields.push({ label: 'Materiaal', value: str('material') })
-    if (str('banW') || str('banH')) fields.push({ label: 'Formaat', value: `${str('banW') || '?'} × ${str('banH') || '?'} cm` })
-    if (str('designWishes')) fields.push({ label: 'Design wensen', value: str('designWishes') })
+    if (str('material')) fields.push({ label: copy.briefing.fields.material, value: translateBriefingValue('bannerMaterials', str('material')) })
+    if (str('banW') || str('banH')) fields.push({ label: copy.briefing.fields.bannerSize, value: `${str('banW') || '?'} × ${str('banH') || '?'} cm` })
+    if (str('designWishes')) fields.push({ label: copy.briefing.fields.designWishes, value: str('designWishes') })
   }
 
   if (inst.typeId === 'af-email') {
     const period = formatPeriod(str('periodStart'), str('periodEnd'))
-    if (period) fields.push({ label: 'Periode', value: period })
+    if (period) fields.push({ label: copy.briefing.fields.campaignPeriod, value: period })
   }
 
   if (inst.typeId === 'af-video') {
-    if (str('vtype')) fields.push({ label: 'Type', value: str('vtype') })
-    if (str('vlen')) fields.push({ label: 'Duur', value: str('vlen') })
-    if (str('orientation')) fields.push({ label: 'Scherm oriëntatie', value: str('orientation') })
-    if (str('specialFormats')) fields.push({ label: 'Speciale formaten', value: str('specialFormats') })
-    if (str('placement')) fields.push({ label: 'Waar getoond', value: str('placement') })
+    if (str('vtype')) fields.push({ label: copy.briefing.fields.videoType, value: translateBriefingValue('videoTypes', str('vtype')) })
+    if (str('vlen')) fields.push({ label: copy.briefing.fields.duration, value: translateBriefingValue('videoDurations', str('vlen')) })
+    if (str('orientation')) fields.push({ label: copy.briefing.fields.screenOrientation, value: translateBriefingValue('orientation', str('orientation')) })
+    if (str('specialFormats')) fields.push({ label: copy.briefing.fields.specialFormats, value: str('specialFormats') })
+    if (str('placement')) fields.push({ label: copy.briefing.fields.whereShown, value: str('placement') })
   }
 
   if (inst.typeId === 'af-sticker') {
     const windowSizes = formatDimensions(dims('windowSizes').length ? dims('windowSizes') : legacyDims('winW', 'winH'))
     const doorSizes = formatDimensions(dims('doorSizes').length ? dims('doorSizes') : legacyDims('doorW', 'doorH'))
-    if (windowSizes) fields.push({ label: 'Etalageraam', value: windowSizes })
-    if (doorSizes) fields.push({ label: 'Deur', value: doorSizes })
-    if (str('notes')) fields.push({ label: 'Opmerkingen', value: str('notes') })
+    if (windowSizes) fields.push({ label: copy.briefing.fields.window, value: windowSizes })
+    if (doorSizes) fields.push({ label: copy.briefing.fields.door, value: doorSizes })
+    if (str('notes')) fields.push({ label: copy.briefing.fields.notes, value: str('notes') })
   }
 
   if (inst.typeId === 'af-landing') {
-    if (str('website')) fields.push({ label: 'URL', value: str('website') })
-    if (str('domain')) fields.push({ label: 'Subpagina', value: str('domain') })
+    if (str('website')) fields.push({ label: copy.briefing.fields.websiteUrl, value: str('website') })
+    if (str('domain')) fields.push({ label: copy.briefing.fields.subpage, value: str('domain') })
   }
 
   if (inst.typeId === 'af-other') {
-    if (str('request')) fields.push({ label: 'Nodig', value: str('request') })
-    if (str('extraInfo')) fields.push({ label: 'Meer informatie', value: str('extraInfo') })
+    if (str('request')) fields.push({ label: copy.briefing.fields.describeNeed, value: str('request') })
+    if (str('extraInfo')) fields.push({ label: copy.briefing.fields.extraInfo, value: str('extraInfo') })
   }
 
   return fields
@@ -139,34 +144,35 @@ export function SummaryModal({
   onRemove,
   onClose,
 }: Props) {
+  const { copy, lang, formatDateLocale, translateBlockMeta, translateCampaignType, translateCountry, translateScope, translateBriefingValue } = useI18n()
   const [extraNote, setExtraNote] = useState('')
 
   const rows = [
-    selGoal && { label: selGoal.label, cat: 'Doel' },
-    selAction && { label: selAction.isCustom && customAction ? customAction : selAction.label, cat: 'Actie' },
-    actionValidUntil && { label: actionValidUntil, cat: 'Geldig tot' },
-    actionScope && { label: actionScope, cat: 'Kanaal' },
-    selNeeds.length > 0 && { label: selNeeds.map(need => need.label).join(', '), cat: 'Behoefte' },
-    selSubjects.length > 0 && { label: selSubjects.map(subject => subject.label).join(', '), cat: 'Subjects' },
-    sharedFields.deadline && { label: sharedFields.deadline, cat: 'Deadline' },
-    sharedFields.liveDate && { label: sharedFields.liveDate, cat: 'Live datum' },
-    sharedFields.desc4 && { label: sharedFields.desc4, cat: 'Omschrijving' },
+    selGoal && { label: selGoal.label, cat: copy.summary.goal },
+    selAction && { label: selAction.isCustom && customAction ? customAction : selAction.label, cat: copy.summary.action },
+    actionValidUntil && { label: actionValidUntil, cat: copy.summary.validUntil },
+    actionScope && { label: translateScope(actionScope), cat: copy.summary.scope },
+    selNeeds.length > 0 && { label: selNeeds.map(need => need.label).join(', '), cat: copy.summary.need },
+    selSubjects.length > 0 && { label: selSubjects.map(subject => subject.label).join(', '), cat: copy.summary.subjects },
+    sharedFields.deadline && { label: sharedFields.deadline, cat: copy.summary.deadline },
+    sharedFields.liveDate && { label: sharedFields.liveDate, cat: copy.summary.liveDate },
+    sharedFields.desc4 && { label: sharedFields.desc4, cat: copy.summary.description },
   ].filter(Boolean) as { label: string; cat: string }[]
 
   function openBriefingDoc() {
-    const dateStr = new Date().toLocaleDateString('nl-BE', { day: '2-digit', month: 'long', year: 'numeric' })
+    const dateStr = new Date().toLocaleDateString(formatDateLocale, { day: '2-digit', month: 'long', year: 'numeric' })
 
     const campaignSections = selCampaigns.map((campaign, index) => {
       const briefing = campaignBriefings.find(item => item.campaignId === campaign._id)
       const accent = ACCENTS[index % ACCENTS.length]
       const blocksHtml = briefing?.instances.map(inst => {
-        const meta = BLOCK_META[inst.typeId]
+        const meta = translateBlockMeta(inst.typeId) || BLOCK_META[inst.typeId]
         if (!meta) return ''
 
-        const fields = collectFields(inst)
+        const fields = collectFields(inst, copy, translateBriefingValue)
         const fieldsHtml = fields.length
           ? fields.map(field => `<tr><td class="doc-lbl">${escapeHtml(field.label)}</td><td class="doc-val">${escapeHtml(field.value)}</td></tr>`).join('')
-          : '<tr><td colspan="2" class="doc-empty">Geen aanvullende details opgegeven</td></tr>'
+          : `<tr><td colspan="2" class="doc-empty">${escapeHtml(copy.summary.noDetails)}</td></tr>`
 
         return `<div class="block">
           <div class="block-head" style="background:${accent}">
@@ -174,7 +180,7 @@ export function SummaryModal({
           </div>
           <table class="block-table">${fieldsHtml}</table>
         </div>`
-      }).join('') || '<div class="empty-blocks">Geen briefing blokken voor deze campagne.</div>'
+      }).join('') || `<div class="empty-blocks">${escapeHtml(copy.summary.noBlocksDoc)}</div>`
 
       const formatsHtml = campaign.formats?.slice(0, 8).map(format => `<span class="fmt-tag">${escapeHtml(format)}</span>`).join('') || ''
 
@@ -183,7 +189,7 @@ export function SummaryModal({
         <div class="campaign-section-head">
           <div class="campaign-index" style="background:${accent}">${index + 1}</div>
           <div>
-            <div class="campaign-type-badge">${escapeHtml(campaign.type)}</div>
+            <div class="campaign-type-badge">${escapeHtml(translateCampaignType(campaign.type))}</div>
             <div class="campaign-name">${escapeHtml(campaign.title)}</div>
             ${campaign.visualStyle ? `<div class="campaign-style">${escapeHtml(campaign.visualStyle.label)}</div>` : ''}
           </div>
@@ -196,8 +202,8 @@ export function SummaryModal({
 
     const logoSvg = getLogoSvgMarkup('white', 26)
 
-    const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-<title>Briefing — ${escapeHtml(clientName || 'Onbekend')}</title>
+    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8">
+<title>${escapeHtml(copy.briefing.title)} — ${escapeHtml(clientName || copy.summary.unknown)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -253,44 +259,44 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
   <div class="doc-header">
     <div>${logoSvg}</div>
     <div class="doc-header-right">
-      <div class="doc-label">Campagne briefing</div>
-      <div class="doc-title">${escapeHtml(clientName || 'Onbekend')}</div>
-      <div class="doc-date">Aangemaakt op ${escapeHtml(dateStr)}</div>
+      <div class="doc-label">${escapeHtml(copy.summary.docTitle)}</div>
+      <div class="doc-title">${escapeHtml(clientName || copy.summary.unknown)}</div>
+      <div class="doc-date">${escapeHtml(copy.summary.createdOn)} ${escapeHtml(dateStr)}</div>
     </div>
   </div>
 
   <div class="client-strip">
-    <div class="ci"><span class="ci-label">Naam winkel</span><span class="ci-val">${escapeHtml(clientName || '—')}</span></div>
-    <div class="ci"><span class="ci-label">Stad</span><span class="ci-val">${escapeHtml(clientCity || '—')}</span></div>
-    <div class="ci"><span class="ci-label">Regio / land</span><span class="ci-val">${escapeHtml(clientCountry || '—')}</span></div>
+    <div class="ci"><span class="ci-label">${escapeHtml(copy.summary.shopName)}</span><span class="ci-val">${escapeHtml(clientName || copy.common.noData)}</span></div>
+    <div class="ci"><span class="ci-label">${escapeHtml(copy.summary.city)}</span><span class="ci-val">${escapeHtml(clientCity || copy.common.noData)}</span></div>
+    <div class="ci"><span class="ci-label">${escapeHtml(copy.summary.region)}</span><span class="ci-val">${escapeHtml(clientCountry ? translateCountry(clientCountry) : copy.common.noData)}</span></div>
   </div>
 
   <div class="section">
-    <div class="section-head">Campagne context</div>
+    <div class="section-head">${escapeHtml(copy.summary.campaignContext)}</div>
     <div class="section-body">
       <div class="ctx-grid">
-        <div class="ctx-item"><span class="ctx-label">Doel</span><span class="ctx-val big">${escapeHtml(selGoal?.label || '—')}</span></div>
-        <div class="ctx-item"><span class="ctx-label">Actie</span><span class="ctx-val">${escapeHtml(selAction?.isCustom && customAction ? customAction : selAction?.label || '—')}</span></div>
-        <div class="ctx-item"><span class="ctx-label">Behoefte</span><span class="ctx-val">${escapeHtml(selNeeds.map(need => need.label).join(', ') || '—')}</span></div>
-        <div class="ctx-item"><span class="ctx-label">Geldig tot</span><span class="ctx-val">${escapeHtml(actionValidUntil || '—')}</span></div>
-        <div class="ctx-item"><span class="ctx-label">Kanaal</span><span class="ctx-val">${escapeHtml(actionScope || '—')}</span></div>
+        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.goal)}</span><span class="ctx-val big">${escapeHtml(selGoal?.label || copy.common.noData)}</span></div>
+        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.action)}</span><span class="ctx-val">${escapeHtml(selAction?.isCustom && customAction ? customAction : selAction?.label || copy.common.noData)}</span></div>
+        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.need)}</span><span class="ctx-val">${escapeHtml(selNeeds.map(need => need.label).join(', ') || copy.common.noData)}</span></div>
+        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.validUntil)}</span><span class="ctx-val">${escapeHtml(actionValidUntil || copy.common.noData)}</span></div>
+        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.scope)}</span><span class="ctx-val">${escapeHtml(actionScope ? translateScope(actionScope) : copy.common.noData)}</span></div>
       </div>
-      ${(sharedFields.deadline || sharedFields.liveDate) ? `<div class="timing-row">${sharedFields.deadline ? `<div class="timing-box"><div class="timing-label">Deadline taak</div><div class="timing-date">${escapeHtml(sharedFields.deadline)}</div></div>` : ''}${sharedFields.liveDate ? `<div class="timing-box"><div class="timing-label">Live datum</div><div class="timing-date">${escapeHtml(sharedFields.liveDate)}</div></div>` : ''}</div>` : ''}
-      ${sharedFields.desc4 ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">Omschrijving</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.desc4)}</p></div>` : ''}
-      ${sharedFields.bgInfo ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">Achtergrond</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.bgInfo)}</p></div>` : ''}
-      ${sharedFields.refUrl ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">Referentie</span><a href="${escapeHtml(sharedFields.refUrl)}" style="font-size:.82rem;color:#0D2340">${escapeHtml(sharedFields.refUrl)}</a></div>` : ''}
+      ${(sharedFields.deadline || sharedFields.liveDate) ? `<div class="timing-row">${sharedFields.deadline ? `<div class="timing-box"><div class="timing-label">${escapeHtml(copy.summary.taskDeadline)}</div><div class="timing-date">${escapeHtml(sharedFields.deadline)}</div></div>` : ''}${sharedFields.liveDate ? `<div class="timing-box"><div class="timing-label">${escapeHtml(copy.summary.liveDate)}</div><div class="timing-date">${escapeHtml(sharedFields.liveDate)}</div></div>` : ''}</div>` : ''}
+      ${sharedFields.desc4 ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.description)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.desc4)}</p></div>` : ''}
+      ${sharedFields.bgInfo ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.background)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.bgInfo)}</p></div>` : ''}
+      ${sharedFields.refUrl ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.reference)}</span><a href="${escapeHtml(sharedFields.refUrl)}" style="font-size:.82rem;color:#0D2340">${escapeHtml(sharedFields.refUrl)}</a></div>` : ''}
     </div>
   </div>
 
   <div class="section-head" style="background:#F3F0EC;border-radius:10px 10px 0 0;border:1px solid #E0DDD6;border-bottom:none;padding:.7rem 1.25rem;font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#888884;margin-bottom:0">
-    Briefing per campagne (${selCampaigns.length})
+    ${escapeHtml(copy.summary.campaignBriefingCount(selCampaigns.length))}
   </div>
   ${campaignSections}
 
-  ${extraNote ? `<div class="section"><div class="section-head">Extra opmerkingen</div><div class="section-body"><p class="note">${escapeHtml(extraNote)}</p></div></div>` : ''}
-  <div class="doc-footer">Gegenereerd via LensOnline Campaign Catalog · marketing@lensonline.nl</div>
+  ${extraNote ? `<div class="section"><div class="section-head">${escapeHtml(copy.summary.extraNotesDoc)}</div><div class="section-body"><p class="note">${escapeHtml(extraNote)}</p></div></div>` : ''}
+  <div class="doc-footer">${escapeHtml(copy.summary.generatedVia)} · marketing@lensonline.nl</div>
 </div>
-<button class="print-btn" onclick="window.print()">Afdrukken / Opslaan als PDF →</button>
+<button class="print-btn" onclick="window.print()">${escapeHtml(copy.summary.print)}</button>
 </body></html>`
 
     const popup = window.open('', '_blank')
@@ -305,15 +311,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
       <div className={styles.modal}>
         <div className={styles.header}>
           <div>
-            <div className={styles.title}>Jouw campagnepakket</div>
-            <div className={styles.sub}>{selCampaigns.length} asset{selCampaigns.length !== 1 ? 's' : ''} geselecteerd</div>
-            {clientName && <div className={styles.client}>{clientName}{clientCity ? `, ${clientCity}` : ''}{clientCountry ? ` — ${clientCountry}` : ''}</div>}
+            <div className={styles.title}>{copy.summary.title}</div>
+            <div className={styles.sub}>{copy.summary.selectedAssets(selCampaigns.length)}</div>
+            {clientName && <div className={styles.client}>{clientName}{clientCity ? `, ${clientCity}` : ''}{clientCountry ? ` — ${translateCountry(clientCountry)}` : ''}</div>}
           </div>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
         </div>
 
         <div className={styles.body}>
-          <div className={styles.sectionLabel}>Campagne & filters</div>
+          <div className={styles.sectionLabel}>{copy.summary.campaignFilters}</div>
           <div className={styles.rows}>
             {rows.map((row, index) => (
               <div key={index} className={styles.row}>
@@ -322,12 +328,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
                 <span className={styles.rowCat}>{row.cat}</span>
               </div>
             ))}
-            {rows.length === 0 && <div className={styles.empty}>Geen filters geselecteerd.</div>}
+            {rows.length === 0 && <div className={styles.empty}>{copy.summary.noFilters}</div>}
           </div>
 
           <div className={styles.divider} />
 
-          <div className={styles.sectionLabel}>Geselecteerde assets</div>
+          <div className={styles.sectionLabel}>{copy.summary.selectedAssetsLabel}</div>
           <div className={styles.assets}>
             {selCampaigns.map(campaign => (
               <div key={campaign._id} className={styles.asset}>
@@ -336,16 +342,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
                 </div>
                 <div className={styles.assetInfo}>
                   <div className={styles.assetTitle}>{campaign.title}</div>
-                  <div className={styles.assetType}>{campaign.type} · {campaign.visualStyle?.label || ''}</div>
+                  <div className={styles.assetType}>{translateCampaignType(campaign.type)} · {campaign.visualStyle?.label || ''}</div>
                 </div>
-                <button className={styles.removeBtn} onClick={() => onRemove(campaign._id)}>✕ Verwijder</button>
+                <button className={styles.removeBtn} onClick={() => onRemove(campaign._id)}>✕ {copy.common.remove}</button>
               </div>
             ))}
           </div>
 
           <div className={styles.divider} />
 
-          <div className={styles.sectionLabel}>Briefing details per campagne</div>
+          <div className={styles.sectionLabel}>{copy.summary.briefingPerCampaign}</div>
           {selCampaigns.map((campaign, index) => {
             const briefing = campaignBriefings.find(item => item.campaignId === campaign._id)
             const accent = ACCENTS[index % ACCENTS.length]
@@ -355,11 +361,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
                 <div className={styles.campaignPreviewHead}>
                   <span className={styles.campaignPreviewDot} style={{ background: accent }}>{index + 1}</span>
                   <span className={styles.campaignPreviewTitle}>{campaign.title}</span>
-                  <span className={styles.campaignPreviewCount}>{briefing?.instances.length || 0} blokken</span>
+                  <span className={styles.campaignPreviewCount}>{copy.summary.blocks(briefing?.instances.length || 0)}</span>
                 </div>
                 {briefing?.instances.map(inst => {
-                  const meta = BLOCK_META[inst.typeId]
-                  const fields = collectFields(inst)
+                  const meta = translateBlockMeta(inst.typeId) || BLOCK_META[inst.typeId]
+                  const fields = collectFields(inst, copy)
 
                   return (
                     <div key={inst.id} className={styles.previewBlock}>
@@ -369,11 +375,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
                           <span className={styles.previewBlockLabel}>{field.label}</span>
                           <span className={styles.previewBlockVal}>{field.value}</span>
                         </div>
-                      )) : <div className={styles.previewBlockEmpty}>Nog geen velden ingevuld</div>}
+                      )) : <div className={styles.previewBlockEmpty}>{copy.summary.noFields}</div>}
                     </div>
                   )
                 })}
-                {!briefing?.instances.length && <div className={styles.previewBlockEmpty}>Geen briefing blokken.</div>}
+                {!briefing?.instances.length && <div className={styles.previewBlockEmpty}>{copy.summary.noBlocks}</div>}
               </div>
             )
           })}
@@ -381,19 +387,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
           <div className={styles.divider} />
 
           <div className={styles.sectionLabel}>
-            Extra opmerkingen <span className={styles.optional}>(optioneel)</span>
+            {copy.summary.extraNotes} <span className={styles.optional}>({copy.common.optional})</span>
           </div>
           <textarea
             className={styles.textarea}
-            placeholder="Voeg hier eventuele extra opmerkingen toe voor het marketingteam..."
+            placeholder={copy.summary.extraNotesPlaceholder}
             value={extraNote}
             onChange={e => setExtraNote(e.target.value)}
           />
         </div>
 
         <div className={styles.footer}>
-          <button className={styles.secBtn} onClick={onClose}>Aanpassen</button>
-          <button className={styles.priBtn} onClick={openBriefingDoc}>Briefing genereren →</button>
+          <button className={styles.secBtn} onClick={onClose}>{copy.common.adjust}</button>
+          <button className={styles.priBtn} onClick={openBriefingDoc}>{copy.summary.generate}</button>
         </div>
       </div>
     </div>

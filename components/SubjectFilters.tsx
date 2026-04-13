@@ -1,6 +1,7 @@
 'use client'
 
 import type { Subject } from './types'
+import { useI18n } from './i18n'
 import styles from './SubjectFilters.module.css'
 
 interface Props {
@@ -10,9 +11,11 @@ interface Props {
 }
 
 export function SubjectFilters({ subjects, selected, onToggle }: Props) {
+  const { copy } = useI18n()
+
   return (
     <div className={styles.row}>
-      <span className={styles.label}>Subject filters</span>
+      <span className={styles.label}>{copy.filters.subjects}</span>
       <div className={styles.chips}>
         {subjects.map(s => {
           const isOn = selected.some(x => x._id === s._id)

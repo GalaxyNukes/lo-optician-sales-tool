@@ -1,5 +1,6 @@
 'use client'
 
+import { useI18n } from './i18n'
 import styles from './BottomBar.module.css'
 
 interface Props {
@@ -15,16 +16,18 @@ const ResetIcon = () => (
 )
 
 export function BottomBar({ count, onSummarise, onReset }: Props) {
+  const { copy } = useI18n()
+
   if (count === 0) return null
 
   return (
     <div className={styles.bar}>
-      <span className={styles.count}>{count} chosen asset{count !== 1 ? 's' : ''}</span>
-      <button className={styles.reset} onClick={onReset} title="Alles resetten">
+      <span className={styles.count}>{copy.bar.chosenAssets(count)}</span>
+      <button className={styles.reset} onClick={onReset} title={copy.bar.reset}>
         <ResetIcon />
       </button>
       <button className={styles.cta} onClick={onSummarise}>
-        Pakket samenvatten
+        {copy.bar.summarize}
       </button>
     </div>
   )

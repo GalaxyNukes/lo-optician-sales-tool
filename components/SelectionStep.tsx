@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useI18n } from './i18n'
 import styles from './SelectionStep.module.css'
 
 interface Item {
@@ -16,13 +17,23 @@ interface CustomActionProps {
   onContinue?: () => void
 }
 
+interface SelectOption {
+  label: string
+  value: string
+}
+
 interface FollowUpField {
   label: string
   type?: 'text' | 'date' | 'select'
   value: string
   placeholder?: string
-  options?: string[]
+  options?: SelectOption[]
   onChange: (v: string) => void
+}
+
+interface FollowUpAction {
+  label: string
+  onClick: () => void
 }
 
 interface Props {
@@ -34,8 +45,11 @@ interface Props {
   answeredLabel?: string
   customAction?: CustomActionProps
   followUpFields?: FollowUpField[]
+  followUpAction?: FollowUpAction
   campaignCountPerItem?: Record<string, number>
   closeOnSelect?: boolean
+  isComplete?: boolean
+  collapseWhenComplete?: boolean
   onSelect: (id: string) => void
 }
 
@@ -57,14 +71,17 @@ function Icon({ type, active }: { type: string; active: boolean }) {
 
 export function SelectionStep({
   stepNumber, question, items, selected, multiSelect,
-  answeredLabel, customAction, followUpFields, campaignCountPerItem, closeOnSelect, onSelect,
+  answeredLabel, customAction, followUpFields, followUpAction, campaignCountPerItem, closeOnSelect, isComplete, collapseWhenComplete, onSelect,
 }: Props) {
+  const { copy } = useI18n()
   const [open, setOpen] = useState(true)
   const isAnswered = selected.length > 0 || Boolean(customAction?.value)
+  const stepComplete = isComplete ?? isAnswered
   const shouldCloseOnSelect = closeOnSelect ?? !multiSelect
 
   // Auto-open when step becomes relevant
   useEffect(() => { setOpen(true) }, [stepNumber])
+  useEffect(() => { if (collapseWhenComplete && stepComplete) setOpen(false) }, [collapseWhenComplete, stepComplete])
 
   const showCustomField = items.some(i => i.isCustom && selected.includes(i.id))
 
@@ -74,7 +91,7 @@ export function SelectionStep({
         <span className={styles.num}>{stepNumber}.</span>
         <span className={styles.question}>
           {question}
-          {isAnswered && <span className={styles.answered}> — {answeredLabel}</span>}
+          {stepComplete && <span className={styles.answered}> — {answeredLabel}</span>}
         </span>
         <span className={styles.arrow}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -115,11 +132,11 @@ export function SelectionStep({
             {showCustomField && customAction && (
               <div className={styles.customField}>
                 <div className={styles.customInner}>
-                  <label className={styles.customLabel}>Beschrijf je actie</label>
+                  <label className={styles.customLabel}>{copy.steps.customActionLabel}</label>
                   <input
                     className={styles.customInput}
                     type="text"
-                    placeholder="Bijv. gratis montuur bij aankoop van glazen..."
+                    placeholder={copy.steps.customActionPlaceholder}
                     value={customAction.value}
                     onChange={e => customAction.onChange(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && customAction.value) customAction.onContinue?.() }}
@@ -132,7 +149,7 @@ export function SelectionStep({
                     disabled={!customAction.value}
                     onClick={customAction.onContinue}
                   >
-                    Doorgaan →
+                    {copy.common.continue}
                   </button>
                 )}
               </div>
@@ -150,8 +167,8 @@ export function SelectionStep({
                           value={field.value}
                           onChange={e => field.onChange(e.target.value)}
                         >
-                          <option value="">Kies er één uit...</option>
-                          {(field.options || []).map(option => <option key={option} value={option}>{option}</option>)}
+                          <option value="">{copy.common.chooseOne}</option>
+                          {(field.options || []).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                         </select>
                       ) : (
                         <input
@@ -165,6 +182,14 @@ export function SelectionStep({
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : null}
+
+            {followUpAction ? (
+              <div className={styles.followUpActions}>
+                <button type="button" className={styles.followUpBtn} onClick={followUpAction.onClick}>
+                  {followUpAction.label}
+                </button>
               </div>
             ) : null}
           </div>
