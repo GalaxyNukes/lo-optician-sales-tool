@@ -15,18 +15,20 @@ function SetupScreen() {
       </p>
       <ol style={{ color: '#333', lineHeight: 2.2, paddingLeft: '1.5rem' }}>
         <li>Go to <strong>Vercel → Project → Settings → Environment Variables</strong></li>
-        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>NEXT_PUBLIC_SANITY_PROJECT_ID</code> — from sanity.io/manage</li>
+        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>NEXT_PUBLIC_SANITY_PROJECT_ID</code></li>
         <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>NEXT_PUBLIC_SANITY_DATASET</code> = <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>production</code></li>
-        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>SANITY_API_READ_TOKEN</code> — Editor token from sanity.io/manage → API</li>
-        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>SANITY_REVALIDATE_SECRET</code> — any random string</li>
+        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>SANITY_API_READ_TOKEN</code></li>
+        <li>Add <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>SANITY_REVALIDATE_SECRET</code></li>
         <li>Click <strong>Redeploy</strong></li>
       </ol>
     </div>
   )
 }
 
+// No-store fetch options — bypass Next.js cache entirely so CMS changes reflect immediately
+const fetchOptions = { cache: 'no-store' as const }
+
 export default async function Page() {
-  // Check env vars before attempting any Sanity calls
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
     return <SetupScreen />
   }
@@ -37,8 +39,12 @@ export default async function Page() {
     const sanityClient = getClient(preview)
 
     const [taxonomy, campaigns] = await Promise.all([
-      sanityClient.fetch(allTaxonomyQuery),
-      sanityClient.fetch(preview ? campaignsPreviewQuery : campaignsQuery),
+      sanityClient.fetch(allTaxonomyQuery, {}, fetchOptions),
+      sanityClient.fetch(
+        preview ? campaignsPreviewQuery : campaignsQuery,
+        {},
+        fetchOptions
+      ),
     ])
 
     return (
