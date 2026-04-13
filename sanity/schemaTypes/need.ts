@@ -23,13 +23,14 @@ export const need = defineType({
       description: 'Which briefing block this need triggers when selected',
       options: {
         list: [
-          { title: '🪟 Stickering & Artist Impression', value: 'af-sticker' },
-          { title: '🚩 Banners & Vlaggen', value: 'af-banner' },
+          { title: '🪟 Partnerbranding', value: 'af-sticker' },
+          { title: '🚩 Banners, lightboxes & Vlaggen', value: 'af-banner' },
           { title: '🖨️ Print & Drukwerk', value: 'af-print' },
-          { title: '📱 Social Media', value: 'af-social' },
+          { title: '📱 Socialmediacampagne', value: 'af-social' },
           { title: '🌐 Landingspagina', value: 'af-landing' },
           { title: '✉️ E-mailcampagne', value: 'af-email' },
           { title: '🎬 Video', value: 'af-video' },
+          { title: '🧩 Anderen', value: 'af-other' },
           { title: '— None', value: 'none' },
         ],
       },

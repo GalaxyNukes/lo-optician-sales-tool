@@ -9,7 +9,8 @@ interface Props {
 }
 
 const COUNTRIES = [
-  { value: 'BE', label: 'België' },
+  { value: 'VL', label: 'Vlaanderen' },
+  { value: 'WA', label: 'Wallonië' },
   { value: 'NL', label: 'Nederland' },
   { value: 'LU', label: 'Luxemburg' },
   { value: 'FR', label: 'Frankrijk' },
@@ -37,7 +38,7 @@ export function ClientStep({ ready, onComplete }: Props) {
       <div className={styles.title}>Gegevens opticien</div>
       <div className={styles.grid}>
         <div className={styles.field}>
-          <label className={styles.label}>Land<span className={styles.req}>*</span></label>
+          <label className={styles.label}>Regio / land<span className={styles.req}>*</span></label>
           <div className={styles.selectWrap}>
             <select className={styles.select} value={country} onChange={e => setCountry(e.target.value)}>
               <option value="">Kies er één uit...</option>

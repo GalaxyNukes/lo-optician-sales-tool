@@ -18,6 +18,15 @@
 .dimRow { display: grid; grid-template-columns: 1fr auto 1fr auto; align-items: center; gap: .4rem; }
 .dimX { font-size: .8rem; color: var(--muted); }
 .dimUnit { font-size: .75rem; color: var(--muted); }
+.periodGrid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.periodField { display: flex; flex-direction: column; gap: .35rem; }
+.periodLabel { font-size: .68rem; color: var(--muted); }
+.dimensionList { display: flex; flex-direction: column; gap: .55rem; }
+.dimensionRow { display: grid; grid-template-columns: 1fr auto 1fr auto auto; align-items: center; gap: .4rem; }
+.dimensionAdd { align-self: flex-start; padding: .5rem .75rem; border-radius: 7px; border: 1px solid var(--bdr); background: #fff; color: var(--navy); font-size: .76rem; transition: border-color .15s, transform .12s; }
+.dimensionAdd:hover { border-color: var(--navy); transform: translateY(-1px); }
+.dimensionRemove { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--bdr); background: var(--bg); color: var(--muted); font-size: .75rem; transition: all .15s; }
+.dimensionRemove:hover { border-color: #E0B4B4; background: #FDF0F0; color: #C0392B; }
 .checkList { display: flex; flex-direction: column; gap: .5rem; }
 .checkRow { display: flex; align-items: center; gap: .6rem; cursor: pointer; padding: .3rem 0; }
 .checkBox { width: 16px; height: 16px; border: 1.5px solid var(--bdr); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .15s; background: #fff; }
@@ -62,7 +71,11 @@
 .addDesc { font-size: .66rem; color: var(--muted); display: block; }
 .addCount { font-size: .62rem; background: var(--navy); color: #fff; border-radius: 100px; padding: .1rem .42rem; margin-left: .3rem; font-weight: 600; vertical-align: middle; }
 
-@media (max-width: 700px) { .row2 { grid-template-columns: 1fr; } .wrap { padding: 1.5rem; } }
+@media (max-width: 700px) {
+  .row2 { grid-template-columns: 1fr; }
+  .periodGrid { grid-template-columns: 1fr; }
+  .wrap { padding: 1.5rem; }
+}
 
 /* ── Per-campaign briefing groups ─────────────────────────────────────────── */
 .campaignGroups { display: flex; flex-direction: column; gap: 1rem; }

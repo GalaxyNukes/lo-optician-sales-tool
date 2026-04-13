@@ -13,7 +13,16 @@ interface Item {
 interface CustomActionProps {
   value: string
   onChange: (v: string) => void
-  onContinue: () => void
+  onContinue?: () => void
+}
+
+interface FollowUpField {
+  label: string
+  type?: 'text' | 'date' | 'select'
+  value: string
+  placeholder?: string
+  options?: string[]
+  onChange: (v: string) => void
 }
 
 interface Props {
@@ -24,7 +33,9 @@ interface Props {
   multiSelect: boolean
   answeredLabel?: string
   customAction?: CustomActionProps
+  followUpFields?: FollowUpField[]
   campaignCountPerItem?: Record<string, number>
+  closeOnSelect?: boolean
   onSelect: (id: string) => void
 }
 
@@ -46,10 +57,11 @@ function Icon({ type, active }: { type: string; active: boolean }) {
 
 export function SelectionStep({
   stepNumber, question, items, selected, multiSelect,
-  answeredLabel, customAction, campaignCountPerItem, onSelect,
+  answeredLabel, customAction, followUpFields, campaignCountPerItem, closeOnSelect, onSelect,
 }: Props) {
   const [open, setOpen] = useState(true)
-  const isAnswered = selected.length > 0 || (customAction && customAction.value)
+  const isAnswered = selected.length > 0 || Boolean(customAction?.value)
+  const shouldCloseOnSelect = closeOnSelect ?? !multiSelect
 
   // Auto-open when step becomes relevant
   useEffect(() => { setOpen(true) }, [stepNumber])
@@ -84,7 +96,7 @@ export function SelectionStep({
                     className={`${styles.card} ${isOn ? styles.on : ''}`}
                     onClick={() => {
                       onSelect(item.id)
-                      if (!multiSelect) setOpen(false)
+                      if (shouldCloseOnSelect) setOpen(false)
                     }}
                   >
                     {count > 0 && (
@@ -110,19 +122,51 @@ export function SelectionStep({
                     placeholder="Bijv. gratis montuur bij aankoop van glazen..."
                     value={customAction.value}
                     onChange={e => customAction.onChange(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && customAction.value) customAction.onContinue() }}
+                    onKeyDown={e => { if (e.key === 'Enter' && customAction.value) customAction.onContinue?.() }}
                     autoFocus
                   />
                 </div>
-                <button
-                  className={styles.customBtn}
-                  disabled={!customAction.value}
-                  onClick={customAction.onContinue}
-                >
-                  Doorgaan →
-                </button>
+                {customAction.onContinue && (
+                  <button
+                    className={styles.customBtn}
+                    disabled={!customAction.value}
+                    onClick={customAction.onContinue}
+                  >
+                    Doorgaan →
+                  </button>
+                )}
               </div>
             )}
+
+            {followUpFields?.length ? (
+              <div className={styles.followUpStack}>
+                {followUpFields.map((field, index) => (
+                  <div key={`${field.label}-${index}`} className={styles.customField}>
+                    <div className={styles.customInner}>
+                      <label className={styles.customLabel}>{field.label}</label>
+                      {field.type === 'select' ? (
+                        <select
+                          className={styles.customSelect}
+                          value={field.value}
+                          onChange={e => field.onChange(e.target.value)}
+                        >
+                          <option value="">Kies er één uit...</option>
+                          {(field.options || []).map(option => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          className={styles.customInput}
+                          type={field.type || 'text'}
+                          value={field.value}
+                          placeholder={field.placeholder}
+                          onChange={e => field.onChange(e.target.value)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

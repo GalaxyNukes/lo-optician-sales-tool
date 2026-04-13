@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Goal, Action, Need, Subject, Campaign } from './types'
-import { BLOCK_META } from './types'
 import { Nav } from './Nav'
 import { ClientStep } from './ClientStep'
 import { SelectionStep } from './SelectionStep'
@@ -14,10 +13,17 @@ import { SummaryModal } from './SummaryModal'
 import { DetailOverlay } from './DetailOverlay'
 
 // ── Shared types for lifted briefing state ────────────────────────────────────
+export interface DimensionEntry {
+  width: string
+  height: string
+}
+
+export type BriefingValue = string | string[] | DimensionEntry[]
+
 export interface BriefingInstance {
   id: string
   typeId: string
-  data: Record<string, string | string[]>
+  data: Record<string, BriefingValue>
 }
 
 export interface CampaignBriefing {
@@ -36,34 +42,50 @@ export interface SharedBriefingFields {
 let _counter = 0
 export const uid = () => `i${_counter++}`
 
+export function campaignMatchesBlockType(campaign: Campaign, typeId: string): boolean {
+  if (typeId === 'af-sticker') return Boolean(campaign.assetFilters?.includes('Stickering') || ['MOCKUP', 'POS'].includes(campaign.type))
+  if (typeId === 'af-banner') return campaign.assetFilters?.some(f => ['Banner', 'Vlag', 'Spandoek', 'Lightbox'].includes(f)) || false
+  if (typeId === 'af-print') return Boolean(campaign.type === 'MEDIA KIT' || campaign.assetFilters?.some(f => f.includes('Flyer') || f.includes('Poster') || f === 'DM'))
+  if (typeId === 'af-social') return campaign.assetFilters?.some(f => ['Meta ADS', 'Google ADS'].includes(f)) || false
+  if (typeId === 'af-email') return campaign.assetFilters?.includes('Email') || false
+  if (typeId === 'af-video') return campaign.assetFilters?.includes('Video') || false
+  if (typeId === 'af-landing') return Boolean(campaign.type === 'LANDING PAGE' || campaign.assetFilters?.includes('Landing Page'))
+  return false
+}
+
+export function campaignMatchesNeed(campaign: Campaign, need: Need): boolean {
+  if (!need.briefingBlockType || need.briefingBlockType === 'none') return false
+
+  const linkedFilters = need.linkedAssetFilters ?? []
+  if (linkedFilters.length > 0) return campaign.assetFilters?.some(filter => linkedFilters.includes(filter)) || false
+
+  return campaignMatchesBlockType(campaign, need.briefingBlockType)
+}
+
 export function getTypesForCampaign(campaign: Campaign, needs: Need[]): string[] {
   const needed: string[] = []
-  const add = (t: string) => { if (!needed.includes(t)) needed.push(t) }
-  needs.forEach(n => {
-    if (!n.briefingBlockType || n.briefingBlockType === 'none') return
-    const linked = n.linkedAssetFilters ?? []
-    if (linked.length === 0 || campaign.assetFilters?.some(f => linked.includes(f))) add(n.briefingBlockType)
+  const add = (typeId: string) => { if (!needed.includes(typeId)) needed.push(typeId) }
+
+  needs.forEach(need => {
+    if (need.briefingBlockType && need.briefingBlockType !== 'none' && campaignMatchesNeed(campaign, need)) {
+      add(need.briefingBlockType)
+    }
   })
-  if (campaign.type === 'LANDING PAGE') add('af-landing')
-  if (campaign.type === 'MEDIA KIT') add('af-print')
-  if (campaign.assetFilters?.includes('Stickering')) add('af-sticker')
-  if (campaign.assetFilters?.some(f => ['Banner','Vlag','Spandoek'].includes(f))) add('af-banner')
-  if (campaign.assetFilters?.some(f => f.includes('Flyer') || f.includes('Poster') || f === 'DM')) add('af-print')
-  if (campaign.assetFilters?.some(f => ['Meta ADS','Google ADS'].includes(f))) add('af-social')
-  if (campaign.assetFilters?.includes('Email')) add('af-email')
-  if (campaign.assetFilters?.includes('Video')) add('af-video')
-  if (campaign.assetFilters?.includes('Landing Page')) add('af-landing')
+
+  ;['af-sticker', 'af-banner', 'af-print', 'af-social', 'af-email', 'af-video', 'af-landing'].forEach(typeId => {
+    if (campaignMatchesBlockType(campaign, typeId)) add(typeId)
+  })
+
   return needed
 }
 
-export function getPrefillForCampaign(typeId: string, campaign: Campaign): Record<string, string | string[]> {
+export function getPrefillForCampaign(typeId: string, campaign: Campaign): Record<string, BriefingValue> {
   const pf = campaign.prefill
   if (!pf) return {}
-  const result: Record<string, string | string[]> = {}
+  const result: Record<string, BriefingValue> = {}
   if (typeId === 'af-print')  { if (pf.printPaper) result.paper = pf.printPaper; if (pf.printQty) result.qty = String(pf.printQty) }
   if (typeId === 'af-social'  && pf.socialPlatforms?.length) result.platforms = pf.socialPlatforms
   if (typeId === 'af-banner'  && pf.bannerMaterial) result.material = pf.bannerMaterial
-  if (typeId === 'af-email')  { if (pf.emailPlatform) result.platform = pf.emailPlatform; if (pf.emailType) result.type = pf.emailType }
   if (typeId === 'af-video')  { if (pf.videoType) result.vtype = pf.videoType; if (pf.videoDuration) result.vlen = pf.videoDuration }
   if (typeId === 'af-sticker' && pf.stickerNotes) result.notes = pf.stickerNotes
   return result
@@ -90,6 +112,8 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const [selGoal, setSelGoal] = useState<Goal | null>(null)
   const [selAction, setSelAction] = useState<Action | null>(null)
   const [customAction, setCustomAction] = useState('')
+  const [actionValidUntil, setActionValidUntil] = useState('')
+  const [actionScope, setActionScope] = useState('')
   const [selNeeds, setSelNeeds] = useState<Need[]>([])
   const [selSubjects, setSelSubjects] = useState<Subject[]>([])
 
@@ -107,8 +131,21 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   // Computed
-  const showCampaignGrid = selNeeds.length > 0
+  const isActionChosen = Boolean(selAction && (!selAction.isCustom || customAction.trim()))
+  const isActionReady = Boolean(isActionChosen && actionValidUntil && actionScope)
+  const showCampaignGrid = isActionReady && selNeeds.length > 0
   const selectedCount = Object.keys(selCampaigns).length
+
+  useEffect(() => {
+    if (isActionReady) return
+
+    setSelNeeds([])
+    setSelSubjects([])
+    setSelCampaigns({})
+    setCampaignBriefings([])
+    setDetailCampaign(null)
+    setSummaryOpen(false)
+  }, [isActionReady])
 
   const filteredCampaigns = campaigns.filter(c => {
     if (selNeeds.length > 0) {
@@ -182,7 +219,14 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
             answeredLabel={selGoal?.label}
             onSelect={(id) => {
               setSelGoal(goals.find(g => g._id === id) || null)
-              setSelAction(null); setSelNeeds([]); setSelSubjects([]); setSelCampaigns({}); setCampaignBriefings([])
+              setSelAction(null)
+              setCustomAction('')
+              setActionValidUntil('')
+              setActionScope('')
+              setSelNeeds([])
+              setSelSubjects([])
+              setSelCampaigns({})
+              setCampaignBriefings([])
             }}
           />
         )}
@@ -194,17 +238,42 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
             items={actions.map(a => ({ id: a._id, label: a.label, icon: a.icon, isCustom: a.isCustom }))}
             selected={selAction ? [selAction._id] : []}
             multiSelect={false}
-            answeredLabel={selAction?.isCustom && customAction ? customAction : selAction?.label}
-            customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction, onContinue: () => {} } : undefined}
+            closeOnSelect={false}
+            answeredLabel={selAction ? [
+              selAction.isCustom && customAction ? customAction : selAction.label,
+              actionValidUntil ? `geldig t/m ${actionValidUntil}` : '',
+              actionScope,
+            ].filter(Boolean).join(' / ') : undefined}
+            customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction } : undefined}
+            followUpFields={selAction ? [
+              {
+                label: 'Tot wanneer is de actie geldig?',
+                type: 'date' as const,
+                value: actionValidUntil,
+                onChange: setActionValidUntil,
+              },
+              ...(actionValidUntil ? [{
+                label: 'Is de actie enkel geldig in de winkel of ook online?',
+                type: 'select' as const,
+                value: actionScope,
+                options: ['Enkel in de winkel', 'Ook online'],
+                onChange: setActionScope,
+              }] : []),
+            ] : undefined}
             onSelect={(id) => {
               const a = actions.find(a => a._id === id) || null
+              const didChange = a?._id !== selAction?._id
               setSelAction(a)
-              if (!a?.isCustom) { setSelNeeds([]); setSelSubjects([]); setSelCampaigns({}); setCampaignBriefings([]) }
+              if (didChange) {
+                setCustomAction('')
+                setActionValidUntil('')
+                setActionScope('')
+              }
             }}
           />
         )}
 
-        {selAction && (!selAction.isCustom || customAction) && (
+        {isActionReady && (
           <SelectionStep
             stepNumber={3}
             question="Wat heb je nodig?"
@@ -213,14 +282,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
             multiSelect={true}
             answeredLabel={selNeeds.map(n => n.label).join(', ')}
             campaignCountPerItem={Object.fromEntries(
-              needs.map(n => [n._id, Object.values(selCampaigns).filter(c =>
-                n.briefingBlockType && c.assetFilters?.some(af =>
-                  (n.briefingBlockType === 'af-social' && ['Meta ADS','Google ADS'].includes(af)) ||
-                  (n.briefingBlockType === 'af-print' && (af.includes('Flyer') || af.includes('Poster'))) ||
-                  (n.briefingBlockType === 'af-sticker' && af === 'Stickering') ||
-                  (n.briefingBlockType === 'af-banner' && ['Banner','Vlag','Spandoek'].includes(af))
-                )
-              ).length])
+              needs.map(n => [n._id, Object.values(selCampaigns).filter(c => campaignMatchesNeed(c, n)).length])
             )}
             onSelect={(id) => {
               const need = needs.find(n => n._id === id)!
@@ -249,7 +311,6 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
         {selectedCount > 0 && (
           <BriefingSection
             selectedCampaigns={Object.values(selCampaigns)}
-            selectedNeeds={selNeeds}
             campaignBriefings={campaignBriefings}
             sharedFields={sharedFields}
             onUpdateBriefing={setCampaignBriefings}
@@ -270,21 +331,23 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
       )}
 
       {summaryOpen && (
-        <SummaryModal
-          clientName={clientName}
-          clientCity={clientCity}
-          clientCountry={clientCountry}
-          selGoal={selGoal}
-          selAction={selAction}
-          customAction={customAction}
-          selNeeds={selNeeds}
-          selSubjects={selSubjects}
-          selCampaigns={Object.values(selCampaigns)}
-          campaignBriefings={campaignBriefings}
-          sharedFields={sharedFields}
-          onRemove={removeCampaign}
-          onClose={() => setSummaryOpen(false)}
-        />
+          <SummaryModal
+            clientName={clientName}
+            clientCity={clientCity}
+            clientCountry={clientCountry}
+            selGoal={selGoal}
+            selAction={selAction}
+            customAction={customAction}
+            actionValidUntil={actionValidUntil}
+            actionScope={actionScope}
+            selNeeds={selNeeds}
+            selSubjects={selSubjects}
+            selCampaigns={Object.values(selCampaigns)}
+            campaignBriefings={campaignBriefings}
+            sharedFields={sharedFields}
+            onRemove={removeCampaign}
+            onClose={() => setSummaryOpen(false)}
+          />
       )}
     </>
   )

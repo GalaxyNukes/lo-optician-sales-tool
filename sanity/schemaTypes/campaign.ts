@@ -175,18 +175,6 @@ export const campaign = defineType({
           options: { list: ['Spandoek PVC', 'Textiel banner', 'Vlag (wimpel)', 'Lichtbak folie', 'Nog niet bepaald'].map(v => ({ title: v, value: v })) },
         }),
         defineField({
-          name: 'emailPlatform',
-          title: 'Email — Platform',
-          type: 'string',
-          options: { list: ['Mailchimp', 'HubSpot', 'Klaviyo', 'Sendgrid', 'Geen / niet van toepassing', 'Ander'].map(v => ({ title: v, value: v })) },
-        }),
-        defineField({
-          name: 'emailType',
-          title: 'Email — Type',
-          type: 'string',
-          options: { list: ['Nieuwsbrief', 'Promotioneel', 'Opstart samenwerking', 'Event uitnodiging', 'Ander'].map(v => ({ title: v, value: v })) },
-        }),
-        defineField({
           name: 'videoType',
           title: 'Video — Type',
           type: 'string',

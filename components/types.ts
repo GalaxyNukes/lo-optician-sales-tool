@@ -49,8 +49,6 @@ export interface Campaign {
     printQty?: number
     socialPlatforms?: string[]
     bannerMaterial?: string
-    emailPlatform?: string
-    emailType?: string
     videoType?: string
     videoDuration?: string
     stickerNotes?: string
@@ -76,13 +74,14 @@ export interface BriefingBlock {
 }
 
 export const BLOCK_META: Record<string, { icon: string; title: string; desc: string }> = {
-  'af-sticker': { icon: '🪟', title: 'Stickering & Artist Impression', desc: "Raamdimensies, gevelfoto's en mockups" },
-  'af-banner':  { icon: '🚩', title: 'Banners & Vlaggen',              desc: "Afmetingen, materiaal en locatiefoto's" },
-  'af-print':   { icon: '🖨️',  title: 'Print & Drukwerk',              desc: 'Papierformaat, oplage en referenties' },
-  'af-social':  { icon: '📱', title: 'Social Media',                   desc: 'Platforms, formaten en inspiratie' },
+  'af-sticker': { icon: '🪟', title: 'Partnerbranding',                desc: "Etalageformaten, deurmaten en winkelbeelden" },
+  'af-banner':  { icon: '🚩', title: 'Banners, lightboxes & Vlaggen',  desc: 'Formaten, materiaal en designwensen' },
+  'af-print':   { icon: '🖨️',  title: 'Print & Drukwerk',              desc: 'Papier, oriëntatie en designwensen' },
+  'af-social':  { icon: '📱', title: 'Socialmediacampagne',            desc: 'Platforms, campagneperiode en inspiratie' },
   'af-landing': { icon: '🌐', title: 'Landingspagina',                 desc: 'URL en gewenste subpagina' },
-  'af-email':   { icon: '✉️',  title: 'E-mailcampagne',                desc: 'Platform, type en doelgroep' },
-  'af-video':   { icon: '🎬', title: 'Video',                          desc: 'Type, duur en referentielinks' },
+  'af-email':   { icon: '✉️',  title: 'E-mailcampagne',                desc: 'Campagneperiode en extra context' },
+  'af-video':   { icon: '🎬', title: 'Video',                          desc: 'Oriëntatie, duur en weergavecontext' },
+  'af-other':   { icon: '🧩', title: 'Anderen',                        desc: 'Overige deliverables en extra informatie' },
 }
 
 export const ASSET_FIELD_MAP: Record<string, string> = {
