@@ -136,9 +136,15 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   // Computed
-  const isActionChosen = Boolean(selAction && (!selAction.isCustom || customAction.trim()))
-  const isActionReady = Boolean(isActionChosen && actionValidUntil && actionScope)
   const isNotApplicableAction = selAction?._id === notApplicableAction._id
+  const isActionChosen = Boolean(selAction && (!selAction.isCustom || customAction.trim()))
+  const isActionReady = Boolean(
+    isActionChosen && (
+      isNotApplicableAction
+        ? true
+        : Boolean(actionValidUntil && actionScope)
+    )
+  )
   const showCampaignGrid = isActionReady && selNeeds.length > 0
   const selectedCount = Object.keys(selCampaigns).length
 
@@ -253,14 +259,14 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
               actionScope ? translateScope(actionScope) : '',
             ].filter(Boolean).join(' / ') : undefined}
             customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction } : undefined}
-            followUpFields={selAction ? [
+            followUpFields={selAction && !isNotApplicableAction ? [
               {
                 label: copy.steps.validUntil,
                 type: 'date' as const,
                 value: actionValidUntil,
                 onChange: setActionValidUntil,
               },
-              ...(actionValidUntil && !isNotApplicableAction ? [{
+              ...(actionValidUntil ? [{
                 label: copy.steps.scopeQuestion,
                 type: 'select' as const,
                 value: actionScope,
