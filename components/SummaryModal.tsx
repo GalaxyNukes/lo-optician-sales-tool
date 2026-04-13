@@ -6,6 +6,7 @@ import type { Goal, Action, Need, Subject, Campaign } from './types'
 import { BLOCK_META } from './types'
 import { useI18n } from './i18n'
 import { getLogoSvgMarkup } from './Logo'
+import { FALLBACK_IMAGE_DATA_URI } from './imageFallback'
 import type { BriefingValue, CampaignBriefing, DimensionEntry, SharedBriefingFields } from './CampaignCatalog'
 import styles from './SummaryModal.module.css'
 
@@ -299,8 +300,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
 <button class="print-btn" onclick="window.print()">${escapeHtml(copy.summary.print)}</button>
 </body></html>`
 
-    const popup = window.open('', '_blank')
+    const popup = window.open('', '_blank', 'noopener,noreferrer')
     if (popup) {
+      popup.opener = null
       popup.document.write(html)
       popup.document.close()
     }
@@ -338,7 +340,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
             {selCampaigns.map(campaign => (
               <div key={campaign._id} className={styles.asset}>
                 <div className={styles.assetImg}>
-                  <Image src={campaign.thumbnail || `https://picsum.photos/seed/${campaign._id}/400/260`} alt={campaign.title} fill sizes="50px" style={{ objectFit: 'cover' }} />
+                  <Image src={campaign.thumbnail || FALLBACK_IMAGE_DATA_URI} alt={campaign.title} fill sizes="50px" style={{ objectFit: 'cover' }} />
                 </div>
                 <div className={styles.assetInfo}>
                   <div className={styles.assetTitle}>{campaign.title}</div>

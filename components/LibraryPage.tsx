@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Nav } from './Nav'
 import { useI18n } from './i18n'
 import type { Campaign, Subject } from './types'
+import { FALLBACK_IMAGE_DATA_URI } from './imageFallback'
 import styles from './LibraryPage.module.css'
 
 const TYPE_COLORS: Record<string, string> = {
@@ -137,7 +138,7 @@ function CampaignCard({ campaign: c, size, index, onClick }: {
       {/* Image */}
       <div className={styles.cardImg}>
         <Image
-          src={c.thumbnail || `https://picsum.photos/seed/${c._id}/600/400`}
+          src={c.thumbnail || FALLBACK_IMAGE_DATA_URI}
           alt={c.title}
           fill
           sizes="(max-width: 700px) 100vw, 33vw"

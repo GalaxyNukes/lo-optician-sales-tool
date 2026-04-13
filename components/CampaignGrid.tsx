@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useI18n } from './i18n'
 import type { Campaign } from './types'
+import { FALLBACK_IMAGE_DATA_URI } from './imageFallback'
 import styles from './CampaignGrid.module.css'
 
 const CHECK_ICON = (
@@ -41,7 +42,7 @@ export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
               {/* Image */}
               <div className={styles.imgWrap}>
                 <Image
-                  src={c.thumbnail || `https://picsum.photos/seed/${c._id}/400/260`}
+                  src={c.thumbnail || FALLBACK_IMAGE_DATA_URI}
                   alt={c.title}
                   fill
                   sizes="(max-width: 700px) 50vw, 20vw"
