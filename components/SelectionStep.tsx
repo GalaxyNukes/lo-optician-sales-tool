@@ -82,7 +82,10 @@ export function SelectionStep({
                   <div
                     key={item.id}
                     className={`${styles.card} ${isOn ? styles.on : ''}`}
-                    onClick={() => onSelect(item.id)}
+                    onClick={() => {
+                      onSelect(item.id)
+                      if (!multiSelect) setOpen(false)
+                    }}
                   >
                     {count > 0 && (
                       <span className={styles.badge}>{count}</span>
