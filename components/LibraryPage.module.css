@@ -267,9 +267,9 @@
   overflow: hidden;
   display: grid;
   grid-template-columns: 55fr 45fr;
-  width: 100%;
-  max-width: 960px;
-  max-height: 82vh;
+  width: 90vw;
+  max-width: 1200px;
+  height: 70vh;
   box-shadow: 0 24px 72px rgba(13,35,64,.22);
   animation: cardIn .3s cubic-bezier(.25,.46,.45,.94);
 }
