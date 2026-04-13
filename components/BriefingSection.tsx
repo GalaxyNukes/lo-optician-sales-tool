@@ -26,7 +26,7 @@ const ACCENTS = ['#0D2340', '#1A6B4A', '#8B3A2A', '#2A4E8B', '#6B2A8B', '#8B6B2A
 const EMPTY_DIMENSION: DimensionEntry = { width: '', height: '' }
 
 function isDimensionEntry(value: unknown): value is DimensionEntry {
-  return Boolean(value) && typeof value === 'object' && 'width' in value && 'height' in value
+  return typeof value === 'object' && value !== null && 'width' in value && 'height' in value
 }
 
 function isStringArray(value: unknown): value is string[] {

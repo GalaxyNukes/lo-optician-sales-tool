@@ -29,7 +29,7 @@ interface Props {
 }
 
 function isDimensionEntry(value: unknown): value is DimensionEntry {
-  return Boolean(value) && typeof value === 'object' && 'width' in value && 'height' in value
+  return typeof value === 'object' && value !== null && 'width' in value && 'height' in value
 }
 
 function isStringArray(value: unknown): value is string[] {
