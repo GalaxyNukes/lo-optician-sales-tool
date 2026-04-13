@@ -300,11 +300,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
 <button class="print-btn" onclick="window.print()">${escapeHtml(copy.summary.print)}</button>
 </body></html>`
 
-    const popup = window.open('', '_blank', 'noopener,noreferrer')
+    const popup = window.open('about:blank', '_blank')
     if (popup) {
-      popup.opener = null
+      popup.document.open()
       popup.document.write(html)
       popup.document.close()
+      popup.focus()
     }
   }
 
