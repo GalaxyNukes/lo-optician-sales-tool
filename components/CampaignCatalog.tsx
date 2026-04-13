@@ -255,28 +255,32 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
             collapseWhenComplete={true}
             answeredLabel={selAction ? [
               selAction.isCustom && customAction ? customAction : selAction.label,
-              actionValidUntil ? `${copy.summary.validUntil.toLowerCase()} ${actionValidUntil}` : '',
-              actionScope ? translateScope(actionScope) : '',
+              !isNotApplicableAction && actionValidUntil ? `${copy.summary.validUntil.toLowerCase()} ${actionValidUntil}` : '',
+              !isNotApplicableAction && actionScope ? translateScope(actionScope) : '',
             ].filter(Boolean).join(' / ') : undefined}
             customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction } : undefined}
-            followUpFields={selAction && !isNotApplicableAction ? [
-              {
-                label: copy.steps.validUntil,
-                type: 'date' as const,
-                value: actionValidUntil,
-                onChange: setActionValidUntil,
-              },
-              ...(actionValidUntil ? [{
-                label: copy.steps.scopeQuestion,
-                type: 'select' as const,
-                value: actionScope,
-                options: [
-                  { value: 'store', label: copy.steps.scope.store },
-                  { value: 'online', label: copy.steps.scope.online },
-                ],
-                onChange: (value: string) => setActionScope(value as 'store' | 'online' | 'na'),
-              }] : []),
-            ] : undefined}
+            followUpFields={(() => {
+              if (!selAction || isNotApplicableAction) return undefined
+
+              return [
+                {
+                  label: copy.steps.validUntil,
+                  type: 'date' as const,
+                  value: actionValidUntil,
+                  onChange: setActionValidUntil,
+                },
+                ...(actionValidUntil ? [{
+                  label: copy.steps.scopeQuestion,
+                  type: 'select' as const,
+                  value: actionScope,
+                  options: [
+                    { value: 'store', label: copy.steps.scope.store },
+                    { value: 'online', label: copy.steps.scope.online },
+                  ],
+                  onChange: (value: string) => setActionScope(value as 'store' | 'online'),
+                }] : []),
+              ]
+            })()}
             onSelect={(id) => {
               const a = step2Actions.find(action => action._id === id) || null
               const didChange = a?._id !== selAction?._id
