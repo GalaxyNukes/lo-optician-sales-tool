@@ -53,6 +53,7 @@ export const campaignsQuery = groq`
     "goals": goals[]->{ _id, label },
     "visualStyle": visualStyle->{ _id, label },
     "subjects": subjects[]->{ _id, label },
+    "relatedNeeds": relatedNeeds[]->{ _id },
     assetFilters,
     prefill
   }
@@ -73,6 +74,7 @@ export const campaignsPreviewQuery = groq`
     "goals": goals[]->{ _id, label },
     "visualStyle": visualStyle->{ _id, label },
     "subjects": subjects[]->{ _id, label },
+    "relatedNeeds": relatedNeeds[]->{ _id },
     assetFilters,
     prefill
   }

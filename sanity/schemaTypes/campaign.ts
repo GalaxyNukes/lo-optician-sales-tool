@@ -99,6 +99,14 @@ export const campaign = defineType({
       description: 'Used for subject filter chips below the grid',
     }),
     defineField({
+      name: 'relatedNeeds',
+      title: 'Related needs (Step 3) ★',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'need' }] }],
+      group: 'targeting',
+      description: 'Which Step 3 needs will show this campaign. A campaign appears when any of its related needs are selected.',
+    }),
+    defineField({
       name: 'assetFilters',
       title: 'Asset filter tags',
       type: 'array',
