@@ -104,6 +104,8 @@ interface Props {
 
 export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, isDraftMode }: Props) {
   const { copy, translateScope } = useI18n()
+  const notApplicableAction: Action = { _id: '__not_applicable__', label: copy.common.notApplicable, icon: 'c' }
+  const step2Actions = [...actions, notApplicableAction]
 
   // Client info
   const [clientReady, setClientReady] = useState(false)
@@ -136,6 +138,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   // Computed
   const isActionChosen = Boolean(selAction && (!selAction.isCustom || customAction.trim()))
   const isActionReady = Boolean(isActionChosen && actionValidUntil && actionScope)
+  const isNotApplicableAction = selAction?._id === notApplicableAction._id
   const showCampaignGrid = isActionReady && selNeeds.length > 0
   const selectedCount = Object.keys(selCampaigns).length
 
@@ -238,7 +241,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
           <SelectionStep
             stepNumber={2}
             question={copy.steps.actionQuestion}
-            items={actions.map(a => ({ id: a._id, label: a.label, icon: a.icon, isCustom: a.isCustom }))}
+            items={step2Actions.map(a => ({ id: a._id, label: a.label, icon: a.icon, isCustom: a.isCustom }))}
             selected={selAction ? [selAction._id] : []}
             multiSelect={false}
             closeOnSelect={false}
@@ -257,7 +260,7 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
                 value: actionValidUntil,
                 onChange: setActionValidUntil,
               },
-              ...(actionValidUntil ? [{
+              ...(actionValidUntil && !isNotApplicableAction ? [{
                 label: copy.steps.scopeQuestion,
                 type: 'select' as const,
                 value: actionScope,
@@ -265,18 +268,17 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
                   { value: 'store', label: copy.steps.scope.store },
                   { value: 'online', label: copy.steps.scope.online },
                 ],
-                onChange: (value: string) => setActionScope(value as 'store' | 'online'),
+                onChange: (value: string) => setActionScope(value as 'store' | 'online' | 'na'),
               }] : []),
             ] : undefined}
-            followUpAction={selAction && actionValidUntil ? { label: copy.common.notApplicable, onClick: () => setActionScope('na') } : undefined}
             onSelect={(id) => {
-              const a = actions.find(a => a._id === id) || null
+              const a = step2Actions.find(action => action._id === id) || null
               const didChange = a?._id !== selAction?._id
               setSelAction(a)
               if (didChange) {
                 setCustomAction('')
                 setActionValidUntil('')
-                setActionScope('')
+                setActionScope(a?._id === notApplicableAction._id ? 'na' : '')
               }
             }}
           />
