@@ -1,51 +1,72 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 
 export const need = defineType({
   name: 'need',
   title: 'Asset Need',
   type: 'document',
   icon: () => '📦',
+  orderings: [orderRankOrdering],
   fields: [
+    orderRankField({ type: 'need' }),
     defineField({
       name: 'label',
       title: 'Label',
       type: 'string',
-      description: 'e.g. "Social Media campaign", "Google ADS", "Printed materials"',
+      description: 'e.g. "A4 Flyer", "Instagram Post", "Window Banner", "Vlag"',
       validation: (R) => R.required(),
     }),
     defineField({
       name: 'briefingBlockType',
       title: 'Briefing block type',
       type: 'string',
-      description: 'Which briefing block this need triggers',
+      description: 'Which briefing block this need triggers when selected',
       options: {
         list: [
-          { title: 'Stickering & Artist Impression', value: 'af-sticker' },
-          { title: 'Banners & Vlaggen', value: 'af-banner' },
-          { title: 'Print & Drukwerk', value: 'af-print' },
-          { title: 'Social Media', value: 'af-social' },
-          { title: 'Landingspagina', value: 'af-landing' },
-          { title: 'E-mailcampagne', value: 'af-email' },
-          { title: 'Video', value: 'af-video' },
-          { title: 'None', value: 'none' },
+          { title: '🪟 Stickering & Artist Impression', value: 'af-sticker' },
+          { title: '🚩 Banners & Vlaggen', value: 'af-banner' },
+          { title: '🖨️ Print & Drukwerk', value: 'af-print' },
+          { title: '📱 Social Media', value: 'af-social' },
+          { title: '🌐 Landingspagina', value: 'af-landing' },
+          { title: '✉️ E-mailcampagne', value: 'af-email' },
+          { title: '🎬 Video', value: 'af-video' },
+          { title: '— None', value: 'none' },
         ],
       },
     }),
     defineField({
       name: 'linkedAssetFilters',
-      title: 'Linked asset filter tags',
+      title: 'Linked campaign asset filters',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'Which campaign asset filter tags this need corresponds to. Campaigns matching any of these tags will be shown when this need is selected.',
+      description: 'Campaigns tagged with any of these will appear when this need is selected.',
       options: {
         list: [
+          // Digital
           { title: 'Meta ADS', value: 'Meta ADS' },
           { title: 'Google ADS', value: 'Google ADS' },
+          // Print formats
           { title: 'Flyer', value: 'Flyer' },
+          { title: 'Flyer A6', value: 'Flyer A6' },
+          { title: 'Flyer A5', value: 'Flyer A5' },
+          { title: 'Flyer A4', value: 'Flyer A4' },
+          { title: 'Poster A3', value: 'Poster A3' },
+          { title: 'Poster A2', value: 'Poster A2' },
+          { title: 'Poster A1', value: 'Poster A1' },
+          { title: 'DM / Direct mail', value: 'DM' },
+          // Banners & outdoor
           { title: 'Banner', value: 'Banner' },
-          { title: 'Stickering', value: 'Stickering' },
+          { title: 'Spandoek', value: 'Spandoek' },
+          { title: 'Vlag', value: 'Vlag' },
           { title: 'Reboard', value: 'Reboard' },
           { title: 'Lightbox', value: 'Lightbox' },
+          // In-store
+          { title: 'Stickering', value: 'Stickering' },
+          { title: 'POS', value: 'POS' },
+          // Other
+          { title: 'Email', value: 'Email' },
+          { title: 'Video', value: 'Video' },
+          { title: 'Landing Page', value: 'Landing Page' },
         ],
       },
     }),
@@ -65,8 +86,10 @@ export const need = defineType({
       },
       validation: (R) => R.required(),
     }),
-    defineField({ name: 'order', title: 'Display order', type: 'number' }),
     defineField({ name: 'active', title: 'Active', type: 'boolean', initialValue: true }),
   ],
-  preview: { select: { title: 'label', subtitle: 'briefingBlockType' }, prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle || 'No briefing block' }) },
+  preview: {
+    select: { title: 'label', subtitle: 'briefingBlockType' },
+    prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle || 'No briefing block' }),
+  },
 })

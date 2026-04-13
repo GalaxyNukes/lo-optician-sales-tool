@@ -16,7 +16,8 @@
     "sanity": "^3.50.0",
     "@sanity/vision": "^3.50.0",
     "@sanity/image-url": "^1.0.2",
-    "styled-components": "^6.1.8"
+    "styled-components": "^6.1.8",
+    "@sanity/orderable-document-list": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",

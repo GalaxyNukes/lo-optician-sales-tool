@@ -1,11 +1,14 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 
 export const goal = defineType({
   name: 'goal',
   title: 'Marketing Goal',
   type: 'document',
   icon: () => '🎯',
+  orderings: [orderRankOrdering],
   fields: [
+    orderRankField({ type: 'goal' }),
     defineField({
       name: 'label',
       title: 'Label',
@@ -23,7 +26,6 @@ export const goal = defineType({
       name: 'icon',
       title: 'Icon key',
       type: 'string',
-      description: 'Internal icon identifier (o, f, s, sp, d, c)',
       options: {
         list: [
           { title: 'Hexagon outline', value: 'o' },
@@ -37,12 +39,6 @@ export const goal = defineType({
       validation: (R) => R.required(),
     }),
     defineField({
-      name: 'order',
-      title: 'Display order',
-      type: 'number',
-      description: 'Lower numbers appear first',
-    }),
-    defineField({
       name: 'active',
       title: 'Active',
       type: 'boolean',
@@ -50,6 +46,8 @@ export const goal = defineType({
       initialValue: true,
     }),
   ],
-  orderings: [{ title: 'Display order', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] }],
-  preview: { select: { title: 'label', subtitle: 'active' }, prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle ? '✅ Active' : '⏸️ Hidden' }) },
+  preview: {
+    select: { title: 'label', subtitle: 'active' },
+    prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle ? '✅ Active' : '⏸️ Hidden' }),
+  },
 })

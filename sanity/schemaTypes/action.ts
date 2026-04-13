@@ -1,11 +1,14 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 
 export const action = defineType({
   name: 'action',
   title: 'Campaign Action',
   type: 'document',
   icon: () => '⚡',
+  orderings: [orderRankOrdering],
   fields: [
+    orderRankField({ type: 'action' }),
     defineField({
       name: 'label',
       title: 'Label',
@@ -36,17 +39,10 @@ export const action = defineType({
       },
       validation: (R) => R.required(),
     }),
-    defineField({
-      name: 'order',
-      title: 'Display order',
-      type: 'number',
-    }),
-    defineField({
-      name: 'active',
-      title: 'Active',
-      type: 'boolean',
-      initialValue: true,
-    }),
+    defineField({ name: 'active', title: 'Active', type: 'boolean', initialValue: true }),
   ],
-  preview: { select: { title: 'label', subtitle: 'active' }, prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle ? '✅ Active' : '⏸️ Hidden' }) },
+  preview: {
+    select: { title: 'label', subtitle: 'active' },
+    prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle ? '✅ Active' : '⏸️ Hidden' }),
+  },
 })

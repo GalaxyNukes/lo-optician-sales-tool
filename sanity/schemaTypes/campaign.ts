@@ -104,8 +104,35 @@ export const campaign = defineType({
       type: 'array',
       of: [{ type: 'string' }],
       group: 'targeting',
+      description: 'Tag this campaign so it appears when matching needs are selected in Step 3',
       options: {
-        list: ['Meta ADS', 'Google ADS', 'Flyer', 'Reboard', 'Banner', 'Stickering', 'Lightbox'].map(v => ({ title: v, value: v })),
+        list: [
+          // Digital
+          { title: 'Meta ADS', value: 'Meta ADS' },
+          { title: 'Google ADS', value: 'Google ADS' },
+          // Print formats
+          { title: 'Flyer', value: 'Flyer' },
+          { title: 'Flyer A6', value: 'Flyer A6' },
+          { title: 'Flyer A5', value: 'Flyer A5' },
+          { title: 'Flyer A4', value: 'Flyer A4' },
+          { title: 'Poster A3', value: 'Poster A3' },
+          { title: 'Poster A2', value: 'Poster A2' },
+          { title: 'Poster A1', value: 'Poster A1' },
+          { title: 'DM / Direct mail', value: 'DM' },
+          // Banners & outdoor
+          { title: 'Banner', value: 'Banner' },
+          { title: 'Spandoek', value: 'Spandoek' },
+          { title: 'Vlag', value: 'Vlag' },
+          { title: 'Reboard', value: 'Reboard' },
+          { title: 'Lightbox', value: 'Lightbox' },
+          // In-store
+          { title: 'Stickering', value: 'Stickering' },
+          { title: 'POS', value: 'POS' },
+          // Other
+          { title: 'Email', value: 'Email' },
+          { title: 'Video', value: 'Video' },
+          { title: 'Landing Page', value: 'Landing Page' },
+        ],
       },
     }),
 

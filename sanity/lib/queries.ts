@@ -6,31 +6,31 @@ import { groq } from 'next-sanity'
 // so `== true` excludes documents where active was never set.
 
 export const goalsQuery = groq`
-  *[_type == "goal" && active != false] | order(order asc) {
+  *[_type == "goal" && active != false] | order(orderRank asc) {
     _id, label, labelNL, icon
   }
 `
 
 export const actionsQuery = groq`
-  *[_type == "action" && active != false] | order(order asc) {
+  *[_type == "action" && active != false] | order(orderRank asc) {
     _id, label, icon, isCustom
   }
 `
 
 export const needsQuery = groq`
-  *[_type == "need" && active != false] | order(order asc) {
+  *[_type == "need" && active != false] | order(orderRank asc) {
     _id, label, icon, briefingBlockType, linkedAssetFilters
   }
 `
 
 export const subjectsQuery = groq`
-  *[_type == "subject" && active != false] | order(order asc) {
+  *[_type == "subject" && active != false] | order(orderRank asc) {
     _id, label
   }
 `
 
 export const visualStylesQuery = groq`
-  *[_type == "visualStyle" && active != false] | order(order asc) {
+  *[_type == "visualStyle" && active != false] | order(orderRank asc) {
     _id, label
   }
 `
@@ -100,9 +100,9 @@ export const campaignByIdQuery = groq`
 
 // All taxonomy in one query — efficient single fetch on page load
 export const allTaxonomyQuery = groq`{
-  "goals":   *[_type == "goal"        && active != false] | order(order asc) { _id, label, labelNL, icon },
-  "actions": *[_type == "action"      && active != false] | order(order asc) { _id, label, icon, isCustom },
-  "needs":   *[_type == "need"        && active != false] | order(order asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
-  "subjects":*[_type == "subject"     && active != false] | order(order asc) { _id, label },
-  "styles":  *[_type == "visualStyle" && active != false] | order(order asc) { _id, label }
+  "goals":   *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
+  "actions": *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
+  "needs":   *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
+  "subjects":*[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
+  "styles":  *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`

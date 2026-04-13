@@ -1,6 +1,7 @@
 import type { StructureResolver } from 'sanity/structure'
+import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
 
-export const structure: StructureResolver = (S) =>
+export const structure: StructureResolver = (S, context) =>
   S.list()
     .title('LensOnline CMS')
     .items([
@@ -14,23 +15,10 @@ export const structure: StructureResolver = (S) =>
 
       S.divider(),
 
-      S.listItem()
-        .title('🎯  Goals (Step 1)')
-        .child(S.documentTypeList('goal').title('Marketing Goals')),
-
-      S.listItem()
-        .title('⚡  Actions (Step 2)')
-        .child(S.documentTypeList('action').title('Campaign Actions')),
-
-      S.listItem()
-        .title('📦  Needs (Step 3)')
-        .child(S.documentTypeList('need').title('Asset Needs')),
-
-      S.listItem()
-        .title('🏷️  Subject Filters')
-        .child(S.documentTypeList('subject').title('Subject Tags')),
-
-      S.listItem()
-        .title('🎨  Visual Styles')
-        .child(S.documentTypeList('visualStyle').title('Visual Styles')),
+      // Drag-and-drop ordering for all taxonomy types
+      orderableDocumentListDeskItem({ type: 'goal',        title: '🎯  Goals (Step 1)',      S, context }),
+      orderableDocumentListDeskItem({ type: 'action',      title: '⚡  Actions (Step 2)',     S, context }),
+      orderableDocumentListDeskItem({ type: 'need',        title: '📦  Needs (Step 3)',       S, context }),
+      orderableDocumentListDeskItem({ type: 'subject',     title: '🏷️  Subject Filters',     S, context }),
+      orderableDocumentListDeskItem({ type: 'visualStyle', title: '🎨  Visual Styles',        S, context }),
     ])
