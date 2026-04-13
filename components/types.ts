@@ -17,6 +17,7 @@ export interface Need {
   label: string
   icon: string
   briefingBlockType?: string
+  linkedAssetFilters?: string[]
 }
 
 export interface Subject {

@@ -46,9 +46,29 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const showCampaignGrid = selNeeds.length > 0
   const selectedCount = Object.keys(selCampaigns).length
 
+  // Campaigns filtered by both selected needs AND subject filters
   const filteredCampaigns = campaigns.filter(c => {
-    if (selSubjects.length === 0) return true
-    return c.subjects.some(s => selSubjects.some(ss => ss._id === s._id))
+    // Filter by needs — show campaign if it matches any selected need's asset filters
+    // If no needs are selected, show nothing (grid is hidden anyway)
+    // If a need has no linkedAssetFilters set, fall back to showing all campaigns for that need
+    if (selNeeds.length > 0) {
+      const allLinkedFilters = selNeeds.flatMap(n => n.linkedAssetFilters ?? [])
+      // If all selected needs have no linkedAssetFilters configured yet, show all campaigns
+      // (graceful fallback until CMS is configured)
+      const hasAnyLinks = selNeeds.some(n => (n.linkedAssetFilters ?? []).length > 0)
+      if (hasAnyLinks) {
+        const campaignFilters = c.assetFilters ?? []
+        const matches = allLinkedFilters.some(f => campaignFilters.includes(f))
+        if (!matches) return false
+      }
+    }
+
+    // Filter by subject chips
+    if (selSubjects.length > 0) {
+      return c.subjects.some(s => selSubjects.some(ss => ss._id === s._id))
+    }
+
+    return true
   })
 
   // ── Handlers ───────────────────────────────────────

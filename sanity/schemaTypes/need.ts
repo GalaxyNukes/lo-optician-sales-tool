@@ -32,6 +32,24 @@ export const need = defineType({
       },
     }),
     defineField({
+      name: 'linkedAssetFilters',
+      title: 'Linked asset filter tags',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Which campaign asset filter tags this need corresponds to. Campaigns matching any of these tags will be shown when this need is selected.',
+      options: {
+        list: [
+          { title: 'Meta ADS', value: 'Meta ADS' },
+          { title: 'Google ADS', value: 'Google ADS' },
+          { title: 'Flyer', value: 'Flyer' },
+          { title: 'Banner', value: 'Banner' },
+          { title: 'Stickering', value: 'Stickering' },
+          { title: 'Reboard', value: 'Reboard' },
+          { title: 'Lightbox', value: 'Lightbox' },
+        ],
+      },
+    }),
+    defineField({
       name: 'icon',
       title: 'Icon key',
       type: 'string',

@@ -19,7 +19,7 @@ export const actionsQuery = groq`
 
 export const needsQuery = groq`
   *[_type == "need" && active != false] | order(order asc) {
-    _id, label, icon, briefingBlockType
+    _id, label, icon, briefingBlockType, linkedAssetFilters
   }
 `
 
@@ -102,7 +102,7 @@ export const campaignByIdQuery = groq`
 export const allTaxonomyQuery = groq`{
   "goals":   *[_type == "goal"        && active != false] | order(order asc) { _id, label, labelNL, icon },
   "actions": *[_type == "action"      && active != false] | order(order asc) { _id, label, icon, isCustom },
-  "needs":   *[_type == "need"        && active != false] | order(order asc) { _id, label, icon, briefingBlockType },
+  "needs":   *[_type == "need"        && active != false] | order(order asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
   "subjects":*[_type == "subject"     && active != false] | order(order asc) { _id, label },
   "styles":  *[_type == "visualStyle" && active != false] | order(order asc) { _id, label }
 }`
