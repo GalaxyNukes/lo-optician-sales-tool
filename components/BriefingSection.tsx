@@ -20,19 +20,20 @@ let instanceCounter = 0
 function nextId() { return `inst-${instanceCounter++}` }
 
 function getNeededTypes(campaigns: Campaign[], needs: Need[]): string[] {
-  const needed = new Set<string>()
-  needs.forEach(n => { if (n.briefingBlockType && n.briefingBlockType !== 'none') needed.add(n.briefingBlockType) })
+  const needed: string[] = []
+  const add = (t: string) => { if (!needed.includes(t)) needed.push(t) }
+  needs.forEach(n => { if (n.briefingBlockType && n.briefingBlockType !== 'none') add(n.briefingBlockType) })
   campaigns.forEach(c => {
-    if (c.type === 'LANDING PAGE') needed.add('af-landing')
-    if (c.type === 'MEDIA KIT') needed.add('af-print')
-    if (c.assetFilters?.includes('Stickering')) needed.add('af-sticker')
-    if (c.assetFilters?.includes('Banner')) needed.add('af-banner')
-    if (c.assetFilters?.includes('Flyer')) needed.add('af-print')
-    if (c.assetFilters?.includes('Meta ADS') || c.assetFilters?.includes('Google ADS')) needed.add('af-social')
-    if (c.formats?.join(' ').toLowerCase().includes('email')) needed.add('af-email')
-    if (c.title?.toLowerCase().includes('video')) needed.add('af-video')
+    if (c.type === 'LANDING PAGE') add('af-landing')
+    if (c.type === 'MEDIA KIT') add('af-print')
+    if (c.assetFilters?.includes('Stickering')) add('af-sticker')
+    if (c.assetFilters?.includes('Banner')) add('af-banner')
+    if (c.assetFilters?.includes('Flyer')) add('af-print')
+    if (c.assetFilters?.includes('Meta ADS') || c.assetFilters?.includes('Google ADS')) add('af-social')
+    if (c.formats?.join(' ').toLowerCase().includes('email')) add('af-email')
+    if (c.title?.toLowerCase().includes('video')) add('af-video')
   })
-  return Array.from(needed)
+  return needed
 }
 
 function getPrefill(typeId: string, campaigns: Campaign[]): Record<string, string | string[]> {
@@ -41,7 +42,7 @@ function getPrefill(typeId: string, campaigns: Campaign[]): Record<string, strin
     const pf = c.prefill
     if (!pf) return
     if (typeId === 'af-print') { if (pf.printPaper && !result.paper) result.paper = pf.printPaper; if (pf.printQty && !result.qty) result.qty = String(pf.printQty) }
-    if (typeId === 'af-social' && pf.socialPlatforms?.length) { const cur = (result.platforms as string[]) || []; result.platforms = [...new Set([...cur, ...pf.socialPlatforms])] }
+    if (typeId === 'af-social' && pf.socialPlatforms?.length) { const cur = (result.platforms as string[]) || []; result.platforms = Array.from(new Set([...cur, ...(pf.socialPlatforms || [])])) }
     if (typeId === 'af-banner' && pf.bannerMaterial && !result.material) result.material = pf.bannerMaterial
     if (typeId === 'af-email') { if (pf.emailPlatform && !result.platform) result.platform = pf.emailPlatform; if (pf.emailType && !result.type) result.type = pf.emailType }
     if (typeId === 'af-video') { if (pf.videoType && !result.vtype) result.vtype = pf.videoType; if (pf.videoDuration && !result.vlen) result.vlen = pf.videoDuration }
