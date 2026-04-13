@@ -40,7 +40,7 @@ export function DetailOverlay({ campaign: c, isSelected, onToggle, onClose }: Pr
             <div className={styles.meta}>
               <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.type}</span><span className={styles.metaVal}>{translateCampaignType(c.type)}</span></div>
               {c.visualStyle && <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.visualStyle}</span><span className={styles.metaVal}>{c.visualStyle.label}</span></div>}
-              <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.formats}</span><span className={styles.metaVal}>{c.formats.length} {copy.detail.items}</span></div>}
+              <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.formats}</span><span className={styles.metaVal}>{c.formats.length} {copy.detail.items}</span></div>
               {c.season && <div className={styles.metaItem}><span className={styles.metaLabel}>{copy.detail.season}</span><span className={styles.metaVal}>{c.season}</span></div>}
             </div>
 
