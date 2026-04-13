@@ -365,7 +365,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
                 </div>
                 {briefing?.instances.map(inst => {
                   const meta = translateBlockMeta(inst.typeId) || BLOCK_META[inst.typeId]
-                  const fields = collectFields(inst, copy)
+                  const fields = collectFields(inst, copy, translateBriefingValue)
 
                   return (
                     <div key={inst.id} className={styles.previewBlock}>

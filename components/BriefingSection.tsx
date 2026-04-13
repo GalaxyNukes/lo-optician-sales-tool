@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from 'react'
 import Image from 'next/image'
 import { useI18n } from './i18n'
 import type { Campaign } from './types'
@@ -19,8 +20,8 @@ interface Props {
   selectedCampaigns: Campaign[]
   campaignBriefings: CampaignBriefing[]
   sharedFields: SharedBriefingFields
-  onUpdateBriefing: React.Dispatch<React.SetStateAction<CampaignBriefing[]>>
-  onUpdateShared: React.Dispatch<React.SetStateAction<SharedBriefingFields>>
+  onUpdateBriefing: Dispatch<SetStateAction<CampaignBriefing[]>>
+  onUpdateShared: Dispatch<SetStateAction<SharedBriefingFields>>
 }
 
 const ACCENTS = ['#0D2340', '#1A6B4A', '#8B3A2A', '#2A4E8B', '#6B2A8B', '#8B6B2A', '#2A6B6B']
@@ -38,7 +39,7 @@ function isDimensionArray(value: unknown): value is DimensionEntry[] {
   return Array.isArray(value) && value.every(isDimensionEntry)
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div className={styles.field}><label className={styles.fieldLabel}>{label}</label>{children}</div>
 }
 
@@ -422,7 +423,7 @@ function CampaignBriefingGroup({
   campaign: Campaign
   accent: string
   briefing: CampaignBriefing
-  onUpdateBriefing: React.Dispatch<React.SetStateAction<CampaignBriefing[]>>
+  onUpdateBriefing: Dispatch<SetStateAction<CampaignBriefing[]>>
 }) {
   const { translateCampaignType, translateBlockMeta, copy } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
@@ -452,7 +453,7 @@ function CampaignBriefingGroup({
   }
 
   return (
-    <div className={styles.campaignGroup} style={{ '--accent': accent } as React.CSSProperties}>
+    <div className={styles.campaignGroup} style={{ '--accent': accent } as CSSProperties}>
       <div className={styles.campaignHeader} style={{ background: accent }} onClick={() => setCollapsed(prev => !prev)}>
         <div className={styles.campaignThumb}>
           {campaign.thumbnail && <Image src={campaign.thumbnail} alt={campaign.title} fill sizes="52px" style={{ objectFit: 'cover' }} />}
