@@ -7,7 +7,7 @@ import { MenuPage }           from '@/components/MenuPage'
 import type { PartnerBlock }  from '@/components/BrochurePage'
 
 export default async function Menu() {
-  const blocks = await client.fetch(partnerBlocksQuery, {}, { cache: 'no-store' }) as PartnerBlock[]
+  const blocks = await client.fetch(partnerBlocksQuery, {}, { cache: 'no-store' }) as unknown as PartnerBlock[]
 
   return (
     <>

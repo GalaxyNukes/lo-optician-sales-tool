@@ -7,7 +7,7 @@ import { BrochurePage }       from '@/components/BrochurePage'
 import type { PartnerBlock }  from '@/components/BrochurePage'
 
 export default async function Brochure() {
-  const blocks = await client.fetch(partnerBlocksQuery, {}, { cache: 'no-store' }) as PartnerBlock[]
+  const blocks = await client.fetch(partnerBlocksQuery, {}, { cache: 'no-store' }) as unknown as PartnerBlock[]
 
   return (
     <>
