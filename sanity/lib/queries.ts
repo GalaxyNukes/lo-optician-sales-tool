@@ -108,3 +108,29 @@ export const allTaxonomyQuery = groq`{
   "subjects":*[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
   "styles":  *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`
+
+// ── Partner brochure & menu queries ──────────────────────────
+
+export const partnerBlocksQuery = groq`
+  *[_type == "partnerBlock" && active != false] | order(orderRank asc) {
+    _id,
+    title,
+    subtitle,
+    badge,
+    badgeColor,
+    description,
+    deliverables,
+    warning,
+    "images": images[] {
+      _key,
+      caption,
+      "url": asset->url,
+      "dimensions": asset->metadata.dimensions
+    },
+    timing,
+    budgetMin,
+    budgetMax,
+    budgetNote,
+    impactLevel
+  }
+`

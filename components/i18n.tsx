@@ -20,6 +20,8 @@ const translations = {
     nav: {
       builder: 'Campagnebouwer',
       library: 'Bibliotheek',
+      brochure: 'Partnergids',
+      menu: 'Activatiemenu',
       languages: { nl: 'NL', fr: 'FR', en: 'EN' },
     },
     common: {
@@ -192,6 +194,8 @@ const translations = {
     nav: {
       builder: 'Créateur de campagne',
       library: 'Bibliothèque',
+      brochure: 'Guide partenaire',
+      menu: "Menu d'activation",
       languages: { nl: 'NL', fr: 'FR', en: 'EN' },
     },
     common: {
@@ -364,6 +368,8 @@ const translations = {
     nav: {
       builder: 'Campaign Builder',
       library: 'Library',
+      brochure: 'Partner Guide',
+      menu: 'Activation Menu',
       languages: { nl: 'NL', fr: 'FR', en: 'EN' },
     },
     common: {

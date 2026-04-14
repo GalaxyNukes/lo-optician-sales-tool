@@ -1,0 +1,286 @@
+/* BrochurePage.module.css — Plus Jakarta Sans, LensOnline design language */
+
+.root {
+  min-height: calc(100vh - 58px);
+  background: #FBFBFB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem 3rem;
+  gap: 1.5rem;
+}
+
+/* ── Header ── */
+.header { text-align: center; }
+.headerTitle { font-size: 1.1rem; font-weight: 700; color: #0D2340; }
+.headerSub   { font-size: .75rem; color: #888884; margin-top: .25rem; }
+
+/* ── Viewer ── */
+.viewer {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.bookWrap {
+  position: relative;
+}
+
+.bookShadow {
+  position: absolute;
+  inset: 4px -4px -8px 4px;
+  background: rgba(0,0,0,.08);
+  border-radius: 4px;
+  z-index: 0;
+}
+
+.book {
+  position: relative;
+  z-index: 1;
+  width: 340px;
+  min-height: 481px; /* A5 ratio at 340px wide */
+  box-shadow: 0 8px 40px rgba(0,0,0,.14);
+  border-radius: 2px 6px 6px 2px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(to right, rgba(0,0,0,.12), rgba(0,0,0,.04));
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Nav buttons ── */
+.navBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid #D4D0C8;
+  background: #fff;
+  font-size: 1rem;
+  color: #0D2340;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.navBtn:hover:not(:disabled) { background: #0D2340; color: #fff; border-color: #0D2340; }
+.navBtn:disabled { opacity: .3; cursor: default; }
+
+/* ── Footer / dots ── */
+.footer { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+.dots { display: flex; gap: 5px; }
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #D4D0C8;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s, transform .2s;
+}
+.dot:hover { background: #888884; transform: scale(1.2); }
+.dotActive { background: #0D2340 !important; }
+.pageLabel { font-size: .7rem; color: #888884; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; }
+
+/* ── Empty state ── */
+.emptyNote { font-size: .8rem; color: #888884; text-align: center; }
+.emptyNote a { color: #0D2340; text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════
+   COVER
+═══════════════════════════════════════════════════════════ */
+.cover {
+  background: #0D2340;
+  width: 100%;
+  min-height: 481px;
+  display: flex;
+  flex-direction: column;
+}
+
+.coverMosaic {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  padding: 16px;
+}
+
+.coverCell {
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+}
+
+.coverCell0 { grid-row: 1 / 3; }  /* tall left cell */
+.coverCell1 { grid-row: 1; }
+.coverCell2 { grid-row: 2; }
+
+.coverCellImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.coverCellTag {
+  position: absolute;
+  bottom: 6px; left: 8px;
+  font-size: 7px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255,255,255,.7);
+  background: rgba(255,255,255,.1);
+  padding: 2px 7px;
+  border-radius: 100px;
+}
+.coverCellEmpty {
+  background: rgba(255,255,255,.06);
+  border: 1px dashed rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.coverCellEmpty span { font-size: 8px; color: rgba(255,255,255,.3); letter-spacing: .06em; }
+
+.coverBottom {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.coverEyebrow { font-size: 8px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #1A9E7E; margin-bottom: 6px; }
+.coverHeadline { font-size: 26px; font-weight: 800; color: #fff; line-height: 1.12; margin-bottom: 5px; }
+.coverHeadline em { color: #1A9E7E; font-style: normal; }
+.coverSub { font-size: 10px; color: rgba(255,255,255,.55); line-height: 1.55; margin-bottom: 12px; }
+.coverFoot { display: flex; align-items: center; justify-content: space-between; }
+.coverYear { font-size: 9px; color: rgba(255,255,255,.35); }
+
+/* ═══════════════════════════════════════════════════════════
+   GENERIC PAGE
+═══════════════════════════════════════════════════════════ */
+.page { background: #fff; width: 100%; min-height: 481px; }
+.pageInner { padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.tag { font-size: 8px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: #1A9E7E; }
+.pageTitle { font-size: 20px; font-weight: 800; color: #0D2340; line-height: 1.15; }
+.pageBody { font-size: 10px; color: #888884; line-height: 1.65; }
+
+/* Stats row */
+.statRow { display: flex; gap: 7px; }
+.stat { flex: 1; background: #FBFBFB; border: 1px solid #D4D0C8; border-radius: 7px; padding: 10px 8px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.statN { font-size: 19px; font-weight: 800; color: #0D2340; }
+.statL { font-size: 8px; color: #888884; line-height: 1.3; }
+
+/* Mini block grid on intro page */
+.miniGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.miniTile { border: 1px solid #D4D0C8; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.miniDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.miniName { font-size: 8px; font-weight: 700; color: #0D2340; line-height: 1.3; }
+.miniDesc { font-size: 7px; color: #888884; line-height: 1.35; }
+
+/* ═══════════════════════════════════════════════════════════
+   BLOCK PAGE
+═══════════════════════════════════════════════════════════ */
+.blockCard {
+  border-left: 3px solid #0D2340;
+  border: 1px solid #D4D0C8;
+  border-left-width: 3px;
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.blockHead {
+  padding: 10px 12px;
+  background: #FBFBFB;
+  border-bottom: 1px solid #D4D0C8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.blockTitle { font-size: 11px; font-weight: 700; color: #0D2340; }
+.blockBadge { font-size: 7px; font-weight: 700; padding: 2px 9px; border-radius: 100px; color: #fff; white-space: nowrap; }
+
+/* Bento image area */
+.bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 72px;
+  gap: 4px;
+  padding: 8px 12px;
+}
+.bentoCell { position: relative; border-radius: 5px; overflow: hidden; background: #F1F1F1; }
+.bentoImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bentoCaption {
+  position: absolute;
+  bottom: 3px; left: 5px;
+  font-size: 7px; color: rgba(255,255,255,.9); font-weight: 600;
+  background: rgba(0,0,0,.35);
+  padding: 1px 5px; border-radius: 3px;
+}
+
+.bentoPlaceholder {
+  margin: 8px 12px;
+  height: 80px;
+  border-radius: 6px;
+  background: #F1F1F1;
+  border: 1px dashed #D4D0C8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bentoPlaceholderInner { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #B0ADA6; }
+.bentoPlaceholderInner span { font-size: 8px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+
+.blockDesc { font-size: 9.5px; color: #888884; line-height: 1.6; padding: 0 12px 8px; }
+.tagRow { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 12px 8px; }
+.delivTag { font-size: 8px; background: #F1F1F1; color: #555; border-radius: 3px; padding: 2px 7px; }
+.warningNote { font-size: 8.5px; font-weight: 600; margin: 0 12px 10px; padding: 6px 9px; border-radius: 5px; }
+
+/* ═══════════════════════════════════════════════════════════
+   BACK COVER
+═══════════════════════════════════════════════════════════ */
+.backCover {
+  background: #0D2340;
+  width: 100%;
+  min-height: 481px;
+  display: flex;
+  flex-direction: column;
+}
+
+.backImgRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  padding: 16px 16px 0;
+}
+.backImgCell {
+  height: 90px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+  border: 1px dashed rgba(255,255,255,.12);
+}
+.backImgCellImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.backBody {
+  flex: 1;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.backHeadline { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.2; }
+.backHeadline em { color: #1A9E7E; font-style: normal; }
+.backBodyText { font-size: 10px; color: rgba(255,255,255,.55); line-height: 1.7; max-width: 240px; }
+.backContact { font-size: 9px; color: rgba(255,255,255,.35); }
+
+.backFoot {
+  padding: 12px 22px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.backUrl { font-size: 9px; color: rgba(255,255,255,.4); }

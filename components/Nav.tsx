@@ -5,7 +5,7 @@ import { useI18n } from './i18n'
 import styles from './Nav.module.css'
 
 interface Props {
-  activePage?: 'builder' | 'library'
+  activePage?: 'builder' | 'library' | 'brochure' | 'menu'
 }
 
 export function Nav({ activePage = 'builder' }: Props) {
@@ -17,6 +17,8 @@ export function Nav({ activePage = 'builder' }: Props) {
       <div className={styles.links}>
         <a href="/" className={`${styles.link} ${activePage === 'builder' ? styles.active : ''}`}>{copy.nav.builder}</a>
         <a href="/library" className={`${styles.link} ${activePage === 'library' ? styles.active : ''}`}>{copy.nav.library}</a>
+        <a href="/brochure" className={`${styles.link} ${activePage === 'brochure' ? styles.active : ''}`}>{copy.nav.brochure}</a>
+        <a href="/menu" className={`${styles.link} ${activePage === 'menu' ? styles.active : ''}`}>{copy.nav.menu}</a>
       </div>
       <div className={styles.langs}>
         {(['nl', 'fr', 'en'] as const).map(code => (

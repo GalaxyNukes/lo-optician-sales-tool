@@ -16,9 +16,14 @@ export const structure: StructureResolver = (S, context) =>
       S.divider(),
 
       // Drag-and-drop ordering for all taxonomy types
-      orderableDocumentListDeskItem({ type: 'goal',        title: '🎯  Goals (Step 1)',      S, context }),
-      orderableDocumentListDeskItem({ type: 'action',      title: '⚡  Actions (Step 2)',     S, context }),
-      orderableDocumentListDeskItem({ type: 'need',        title: '📦  Needs (Step 3)',       S, context }),
-      orderableDocumentListDeskItem({ type: 'subject',     title: '🏷️  Subject Filters',     S, context }),
-      orderableDocumentListDeskItem({ type: 'visualStyle', title: '🎨  Visual Styles',        S, context }),
+      orderableDocumentListDeskItem({ type: 'goal',         title: '🎯  Goals (Step 1)',      S, context }),
+      orderableDocumentListDeskItem({ type: 'action',       title: '⚡  Actions (Step 2)',     S, context }),
+      orderableDocumentListDeskItem({ type: 'need',         title: '📦  Needs (Step 3)',       S, context }),
+      orderableDocumentListDeskItem({ type: 'subject',      title: '🏷️  Subject Filters',     S, context }),
+      orderableDocumentListDeskItem({ type: 'visualStyle',  title: '🎨  Visual Styles',        S, context }),
+
+      S.divider(),
+
+      // Partner brochure & menu blocks
+      orderableDocumentListDeskItem({ type: 'partnerBlock', title: '📋  Partner Blocks (Brochure & Menu)', S, context }),
     ])
