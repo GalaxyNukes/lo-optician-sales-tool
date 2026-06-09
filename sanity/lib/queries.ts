@@ -29,6 +29,23 @@ export const subjectsQuery = groq`
   }
 `
 
+export const assetTypesQuery = groq`
+  *[_type == "assetType" && active != false] | order(orderRank asc) {
+    _id, label, subtitle, key, blockType, icon, linkedAssetFilters
+  }
+`
+
+// Themes group designs. Designs are resolved to URLs inline (same pattern as thumbnails).
+export const themesQuery = groq`
+  *[_type == "theme" && active != false] | order(orderRank asc) {
+    _id,
+    title,
+    season,
+    "subjects": subjects[]->{ _id, label },
+    "designs": designs[]{ _key, title, "image": image.asset->url }
+  }
+`
+
 export const visualStylesQuery = groq`
   *[_type == "visualStyle" && active != false] | order(orderRank asc) {
     _id, label
@@ -102,11 +119,13 @@ export const campaignByIdQuery = groq`
 
 // All taxonomy in one query — efficient single fetch on page load
 export const allTaxonomyQuery = groq`{
-  "goals":   *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
-  "actions": *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
-  "needs":   *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
-  "subjects":*[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
-  "styles":  *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
+  "goals":     *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
+  "actions":   *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
+  "needs":     *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
+  "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, linkedAssetFilters },
+  "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]{ _key, title, "image": image.asset->url } },
+  "subjects":  *[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
+  "styles":    *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`
 
 // ── Partner brochure & menu queries ──────────────────────────

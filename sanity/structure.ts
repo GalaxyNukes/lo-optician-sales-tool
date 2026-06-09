@@ -18,7 +18,9 @@ export const structure: StructureResolver = (S, context) =>
       // Drag-and-drop ordering for all taxonomy types
       orderableDocumentListDeskItem({ type: 'goal',         title: '🎯  Goals (Step 1)',      S, context }),
       orderableDocumentListDeskItem({ type: 'action',       title: '⚡  Actions (Step 2)',     S, context }),
-      orderableDocumentListDeskItem({ type: 'need',         title: '📦  Needs (Step 3)',       S, context }),
+      orderableDocumentListDeskItem({ type: 'assetType',    title: '🧱  Asset Types (Step 3)', S, context }),
+      orderableDocumentListDeskItem({ type: 'theme',        title: '🎨  Themes & Designs',     S, context }),
+      orderableDocumentListDeskItem({ type: 'need',         title: '📦  Needs (legacy)',       S, context }),
       orderableDocumentListDeskItem({ type: 'subject',      title: '🏷️  Subject Filters',     S, context }),
       orderableDocumentListDeskItem({ type: 'visualStyle',  title: '🎨  Visual Styles',        S, context }),
 
