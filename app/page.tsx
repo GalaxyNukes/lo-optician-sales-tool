@@ -1,5 +1,5 @@
 import { draftMode } from 'next/headers'
-import { allTaxonomyQuery, campaignsQuery, campaignsPreviewQuery } from '@/sanity/lib/queries'
+import { allTaxonomyQuery } from '@/sanity/lib/queries'
 import { CampaignCatalog } from '@/components/CampaignCatalog'
 
 export const dynamic = 'force-dynamic'
@@ -38,22 +38,15 @@ export default async function Page() {
     const { isEnabled: preview } = await draftMode()
     const sanityClient = getClient(preview)
 
-    const [taxonomy, campaigns] = await Promise.all([
-      sanityClient.fetch(allTaxonomyQuery, {}, fetchOptions),
-      sanityClient.fetch(
-        preview ? campaignsPreviewQuery : campaignsQuery,
-        {},
-        fetchOptions
-      ),
-    ])
+    const taxonomy = await sanityClient.fetch(allTaxonomyQuery, {}, fetchOptions)
 
     return (
       <CampaignCatalog
         goals={taxonomy?.goals ?? []}
         actions={taxonomy?.actions ?? []}
-        needs={taxonomy?.needs ?? []}
+        assetTypes={taxonomy?.assetTypes ?? []}
+        themes={taxonomy?.themes ?? []}
         subjects={taxonomy?.subjects ?? []}
-        campaigns={campaigns ?? []}
         isDraftMode={preview}
       />
     )

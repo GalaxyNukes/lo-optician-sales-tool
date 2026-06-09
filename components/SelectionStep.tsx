@@ -8,6 +8,7 @@ interface Item {
   id: string
   label: string
   icon: string
+  subtitle?: string
   isCustom?: boolean
 }
 
@@ -50,6 +51,7 @@ interface Props {
   closeOnSelect?: boolean
   isComplete?: boolean
   collapseWhenComplete?: boolean
+  variant?: 'compact' | 'rich'
   onSelect: (id: string) => void
 }
 
@@ -71,7 +73,7 @@ function Icon({ type, active }: { type: string; active: boolean }) {
 
 export function SelectionStep({
   stepNumber, question, items, selected, multiSelect,
-  answeredLabel, customAction, followUpFields, followUpAction, campaignCountPerItem, closeOnSelect, isComplete, collapseWhenComplete, onSelect,
+  answeredLabel, customAction, followUpFields, followUpAction, campaignCountPerItem, closeOnSelect, isComplete, collapseWhenComplete, variant = 'compact', onSelect,
 }: Props) {
   const { copy } = useI18n()
   const [open, setOpen] = useState(true)
@@ -103,18 +105,35 @@ export function SelectionStep({
       <div className={styles.body}>
         <div className={styles.inner}>
           <div className={styles.content}>
-            <div className={styles.grid}>
+            <div className={variant === 'rich' ? styles.richGrid : styles.grid}>
               {items.map(item => {
                 const isOn = selected.includes(item.id)
                 const count = campaignCountPerItem?.[item.id] ?? 0
+                const handleClick = () => {
+                  onSelect(item.id)
+                  if (shouldCloseOnSelect) setOpen(false)
+                }
+                if (variant === 'rich') {
+                  return (
+                    <div
+                      key={item.id}
+                      className={`${styles.richCard} ${isOn ? styles.richOn : ''}`}
+                      onClick={handleClick}
+                    >
+                      {count > 0 && <span className={styles.badge}>{count}</span>}
+                      <span className={styles.richIcon}>{item.icon}</span>
+                      <span className={styles.richText}>
+                        <span className={styles.richTitle}>{item.label}</span>
+                        {item.subtitle && <span className={styles.richDesc}>{item.subtitle}</span>}
+                      </span>
+                    </div>
+                  )
+                }
                 return (
                   <div
                     key={item.id}
                     className={`${styles.card} ${isOn ? styles.on : ''}`}
-                    onClick={() => {
-                      onSelect(item.id)
-                      if (shouldCloseOnSelect) setOpen(false)
-                    }}
+                    onClick={handleClick}
                   >
                     {count > 0 && (
                       <span className={styles.badge}>{count}</span>

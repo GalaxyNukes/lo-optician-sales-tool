@@ -25,6 +25,31 @@ export interface Subject {
   label: string
 }
 
+// ── Asset-type flow (Step 3 redesign) ─────────────────────────────────────────
+export interface AssetType {
+  _id: string
+  label: string
+  subtitle?: string
+  key: string          // selects the frontend field set
+  blockType: string    // accent / grouping bucket (af-social, af-print, …)
+  icon?: string        // emoji shown on the Step 3 card
+  linkedAssetFilters?: string[]
+}
+
+export interface ThemeDesign {
+  _key: string
+  title: string
+  image: string        // resolved URL
+}
+
+export interface Theme {
+  _id: string
+  title: string
+  season?: string
+  subjects: { _id: string; label: string }[]
+  designs: ThemeDesign[]
+}
+
 export interface CampaignGoal {
   _id: string
   label: string

@@ -1,0 +1,50 @@
+/* Instances */
+.instance { border: 1px solid var(--bdr); border-radius: 10px; overflow: hidden; background: #fff; margin-bottom: .75rem; }
+.instance:last-of-type { margin-bottom: 0; }
+.instanceHead { display: flex; align-items: center; gap: .6rem; padding: .65rem 1rem; border-bottom: 1px solid var(--bdr-l); }
+.instanceTitle { font-size: .72rem; font-weight: 600; letter-spacing: .04em; color: var(--navy); }
+.instanceRemove { margin-left: auto; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--bdr); background: var(--bg); color: var(--muted); font-size: .75rem; cursor: pointer; transition: all .15s; }
+.instanceRemove:hover { border-color: #E0B4B4; background: #FDF0F0; color: #C0392B; }
+
+/* Tabs */
+.tabs { display: flex; gap: .25rem; padding: .55rem 1rem 0; border-bottom: 1px solid var(--bdr-l); }
+.tab { padding: .5rem .95rem; font-size: .76rem; font-weight: 500; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; transition: color .15s, border-color .15s; }
+.tab:hover { color: var(--navy); }
+.tabActive { color: var(--navy); border-bottom-color: var(--navy); }
+.tabPanel { padding: .75rem 1rem 1.1rem; }
+
+/* add-instance button */
+.addInstance { width: 100%; margin-top: .25rem; padding: .8rem; border: 1.5px dashed var(--bdr); border-radius: 9px; background: #fff; color: var(--navy); font-size: .8rem; font-weight: 500; cursor: pointer; transition: border-color .15s, background .15s; }
+.addInstance:hover { border-color: var(--navy); background: rgba(13,35,64,.03); }
+
+/* group icon (emoji) */
+.groupIcon { width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+
+/* ── Design picker ──────────────────────────────────────────────── */
+.designWrap { display: flex; flex-direction: column; gap: 1rem; }
+.themeRow { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.themeLabel { font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: .25rem; }
+.themeChip { padding: .4rem .8rem; border-radius: 100px; border: 1px solid var(--bdr); background: #fff; color: var(--text); font-size: .76rem; cursor: pointer; transition: all .15s; }
+.themeChip:hover { border-color: var(--navy); }
+.themeChipOn { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+.designGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .7rem; }
+.designCard { border: 2px solid transparent; border-radius: 9px; overflow: hidden; cursor: pointer; background: #fff; box-shadow: 0 0 0 1px var(--bdr); transition: box-shadow .15s, transform .15s; }
+.designCard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(13,35,64,.12); }
+.designCardOn { border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
+.designThumb { position: relative; aspect-ratio: 4 / 3; background: #C8C4BC; }
+.designCheck { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; }
+.designTitle { padding: .5rem .6rem; font-size: .76rem; font-weight: 500; color: var(--navy); line-height: 1.25; }
+
+.customCard { display: flex; align-items: center; gap: .6rem; padding: .85rem 1rem; border: 1.5px dashed var(--bdr); border-radius: 9px; background: #fff; cursor: pointer; transition: all .15s; }
+.customCard:hover { border-color: var(--navy); }
+.customCardOn { border-style: solid; border-color: var(--navy); background: rgba(13,35,64,.03); }
+.customPlus { width: 26px; height: 26px; border-radius: 7px; background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: .95rem; flex-shrink: 0; }
+.customLabel { font-size: .82rem; font-weight: 500; color: var(--navy); }
+.customNote { width: 100%; margin-top: .5rem; padding: .65rem .85rem; font-size: .83rem; color: var(--text); border: 1px solid var(--bdr); border-radius: 7px; background: #fff; outline: none; font-family: inherit; resize: vertical; min-height: 70px; line-height: 1.5; }
+.customNote:focus { border-color: var(--navy); }
+.emptyDesigns { font-size: .78rem; color: var(--muted); font-style: italic; padding: .5rem 0; }
+
+@media (max-width: 600px) {
+  .designGrid { grid-template-columns: repeat(2, 1fr); }
+}

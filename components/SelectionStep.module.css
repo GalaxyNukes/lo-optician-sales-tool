@@ -64,5 +64,30 @@
 .followUpBtn { padding: .62rem 1rem; border: 1px solid var(--bdr); border-radius: 7px; background: #fff; color: var(--navy); font-size: .8rem; font-weight: 500; transition: all .15s; }
 .followUpBtn:hover { border-color: var(--navy); background: rgba(13,35,64,.04); }
 
+/* rich variant — asset-type selector cards (emoji + subtitle + count) */
+.richGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .6rem; }
+.richCard {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .95rem 1rem;
+  background: var(--cu);
+  border: 2px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .18s, border-color .18s, transform .15s;
+  min-height: 92px;
+}
+.richCard:hover { background: #C8C4BC; transform: translateY(-1px); }
+.richOn { background: var(--navy); border-color: rgba(255,255,255,.15); }
+.richOn:hover { background: var(--navy-h); }
+.richIcon { font-size: 1.1rem; line-height: 1.2; flex-shrink: 0; }
+.richText { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+.richTitle { font-size: .85rem; font-weight: 500; color: #3A3630; line-height: 1.25; }
+.richOn .richTitle { color: #fff; }
+.richDesc { font-size: .7rem; color: var(--muted); line-height: 1.35; }
+.richOn .richDesc { color: rgba(255,255,255,.7); }
+
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } .richGrid { grid-template-columns: 1fr; } }

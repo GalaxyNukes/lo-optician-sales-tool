@@ -1,17 +1,15 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import type { Goal, Action, Need, Subject, Campaign } from './types'
+import type { Goal, Action, Need, Subject, Campaign, AssetType, Theme } from './types'
 import { useI18n } from './i18n'
 import { Nav } from './Nav'
 import { ClientStep } from './ClientStep'
 import { SelectionStep } from './SelectionStep'
 import { SubjectFilters } from './SubjectFilters'
-import { CampaignGrid } from './CampaignGrid'
-import { BriefingSection } from './BriefingSection'
+import { AssetBriefingSection } from './AssetBriefingSection'
 import { BottomBar } from './BottomBar'
 import { SummaryModal } from './SummaryModal'
-import { DetailOverlay } from './DetailOverlay'
 
 // ── Shared types for lifted briefing state ────────────────────────────────────
 export interface DimensionEntry {
@@ -40,9 +38,41 @@ export interface SharedBriefingFields {
   refUrl: string
 }
 
+// ── Per-asset briefing state (Step 3 redesign) ───────────────────────────────
+export interface AssetBriefingInstance {
+  id: string
+  data: Record<string, BriefingValue>
+  selectedThemeId: string | null
+  selectedDesignKey: string | null
+  selectedDesignTitle: string | null
+  customDesignNote: string
+}
+
+export interface AssetBriefing {
+  assetTypeId: string
+  assetKey: string             // selects the field set
+  blockType: string            // accent / grouping
+  label: string
+  icon: string                 // emoji from the asset type
+  accentColor: string
+  instances: AssetBriefingInstance[]
+}
+
 let _counter = 0
 export const uid = () => `i${_counter++}`
 
+export function newAssetInstance(): AssetBriefingInstance {
+  return {
+    id: uid(),
+    data: {},
+    selectedThemeId: null,
+    selectedDesignKey: null,
+    selectedDesignTitle: null,
+    customDesignNote: '',
+  }
+}
+
+// ── Legacy campaign helpers (still used by the Library briefing utilities) ─────
 export function campaignMatchesBlockType(campaign: Campaign, typeId: string): boolean {
   if (typeId === 'af-sticker') return Boolean(campaign.assetFilters?.includes('Stickering') || ['MOCKUP', 'POS'].includes(campaign.type))
   if (typeId === 'af-banner') return campaign.assetFilters?.some(f => ['Banner', 'Vlag', 'Spandoek', 'Lightbox'].includes(f)) || false
@@ -93,16 +123,18 @@ export function getPrefillForCampaign(typeId: string, campaign: Campaign): Recor
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+const ACCENTS = ['#0D2340', '#1A6B4A', '#8B3A2A', '#2A4E8B', '#6B2A8B', '#8B6B2A', '#2A6B6B']
+
 interface Props {
   goals: Goal[]
   actions: Action[]
-  needs: Need[]
+  assetTypes: AssetType[]
+  themes: Theme[]
   subjects: Subject[]
-  campaigns: Campaign[]
   isDraftMode: boolean
 }
 
-export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, isDraftMode }: Props) {
+export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, isDraftMode }: Props) {
   const { copy, translateScope } = useI18n()
   const notApplicableAction: Action = { _id: '__not_applicable__', label: copy.common.notApplicable, icon: 'c' }
   const step2Actions = [...actions, notApplicableAction]
@@ -119,20 +151,16 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
   const [customAction, setCustomAction] = useState('')
   const [actionValidUntil, setActionValidUntil] = useState('')
   const [actionScope, setActionScope] = useState<'store' | 'online' | 'na' | ''>('')
-  const [selNeeds, setSelNeeds] = useState<Need[]>([])
+  const [selAssetTypes, setSelAssetTypes] = useState<AssetType[]>([])
   const [selSubjects, setSelSubjects] = useState<Subject[]>([])
 
-  // Campaign selection
-  const [selCampaigns, setSelCampaigns] = useState<Record<string, Campaign>>({})
-
   // ── Lifted briefing state ─────────────────────────────────────────────────
-  const [campaignBriefings, setCampaignBriefings] = useState<CampaignBriefing[]>([])
+  const [assetBriefings, setAssetBriefings] = useState<AssetBriefing[]>([])
   const [sharedFields, setSharedFields] = useState<SharedBriefingFields>({
     deadline: '', liveDate: '', desc4: '', bgInfo: '', refUrl: '',
   })
 
   // UI state
-  const [detailCampaign, setDetailCampaign] = useState<Campaign | null>(null)
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   // Computed
@@ -145,63 +173,41 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
         : Boolean(actionValidUntil && actionScope)
     )
   )
-  const showCampaignGrid = isActionReady && selNeeds.length > 0
-  const selectedCount = Object.keys(selCampaigns).length
+  const showBriefing = isActionReady && selAssetTypes.length > 0
+  const totalInstances = assetBriefings.reduce((sum, b) => sum + b.instances.length, 0)
 
   useEffect(() => {
     if (isActionReady) return
 
-    setSelNeeds([])
+    setSelAssetTypes([])
     setSelSubjects([])
-    setSelCampaigns({})
-    setCampaignBriefings([])
-    setDetailCampaign(null)
+    setAssetBriefings([])
     setSummaryOpen(false)
   }, [isActionReady])
 
-  const filteredCampaigns = campaigns.filter(c => {
-    if (selNeeds.length > 0) {
-      const allLinkedFilters = selNeeds.flatMap(n => n.linkedAssetFilters ?? [])
-      const hasAnyLinks = selNeeds.some(n => (n.linkedAssetFilters ?? []).length > 0)
-      if (hasAnyLinks) {
-        const campaignFilters = c.assetFilters ?? []
-        if (!allLinkedFilters.some(f => campaignFilters.includes(f))) return false
+  const toggleAssetType = useCallback((assetType: AssetType) => {
+    setSelAssetTypes(prev => {
+      if (prev.some(a => a._id === assetType._id)) {
+        setAssetBriefings(b => b.filter(x => x.assetTypeId !== assetType._id))
+        return prev.filter(a => a._id !== assetType._id)
       }
-    }
-    if (selSubjects.length > 0) return c.subjects.some(s => selSubjects.some(ss => ss._id === s._id))
-    return true
-  })
-
-  const toggleCampaign = useCallback((campaign: Campaign) => {
-    setSelCampaigns(prev => {
-      const next = { ...prev }
-      if (next[campaign._id]) {
-        delete next[campaign._id]
-        // Remove briefing for this campaign
-        setCampaignBriefings(b => b.filter(x => x.campaignId !== campaign._id))
-      } else {
-        next[campaign._id] = campaign
-        // Add briefing for this campaign with prefilled blocks
-        const types = getTypesForCampaign(campaign, selNeeds)
-        setCampaignBriefings(b => [...b, {
-          campaignId: campaign._id,
-          instances: types.map(typeId => ({
-            id: uid(), typeId, data: getPrefillForCampaign(typeId, campaign),
-          })),
-        }])
-      }
-      return next
+      setAssetBriefings(b => [...b, {
+        assetTypeId: assetType._id,
+        assetKey: assetType.key,
+        blockType: assetType.blockType,
+        label: assetType.label,
+        icon: assetType.icon || '🧩',
+        accentColor: ACCENTS[prev.length % ACCENTS.length],
+        instances: [newAssetInstance()],
+      }])
+      return [...prev, assetType]
     })
-  }, [selNeeds])
-
-  const removeCampaign = useCallback((id: string) => {
-    setSelCampaigns(prev => { const n = { ...prev }; delete n[id]; return n })
-    setCampaignBriefings(b => b.filter(x => x.campaignId !== id))
   }, [])
 
   const resetAll = useCallback(() => {
-    setSelCampaigns({})
-    setCampaignBriefings([])
+    setSelAssetTypes([])
+    setAssetBriefings([])
+    setSelSubjects([])
     setSharedFields({ deadline: '', liveDate: '', desc4: '', bgInfo: '', refUrl: '' })
   }, [])
 
@@ -235,10 +241,9 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
               setCustomAction('')
               setActionValidUntil('')
               setActionScope('')
-              setSelNeeds([])
+              setSelAssetTypes([])
               setSelSubjects([])
-              setSelCampaigns({})
-              setCampaignBriefings([])
+              setAssetBriefings([])
             }}
           />
         )}
@@ -298,21 +303,20 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
           <SelectionStep
             stepNumber={3}
             question={copy.steps.needQuestion}
-            items={needs.map(n => ({ id: n._id, label: n.label, icon: n.icon }))}
-            selected={selNeeds.map(n => n._id)}
+            items={assetTypes.map(a => ({ id: a._id, label: a.label, icon: a.icon || '🧩', subtitle: a.subtitle }))}
+            selected={selAssetTypes.map(a => a._id)}
             multiSelect={true}
-            answeredLabel={selNeeds.map(n => n.label).join(', ')}
-            campaignCountPerItem={Object.fromEntries(
-              needs.map(n => [n._id, Object.values(selCampaigns).filter(c => campaignMatchesNeed(c, n)).length])
-            )}
+            variant="rich"
+            answeredLabel={selAssetTypes.map(a => a.label).join(', ')}
+            campaignCountPerItem={Object.fromEntries(assetBriefings.map(b => [b.assetTypeId, b.instances.length]))}
             onSelect={(id) => {
-              const need = needs.find(n => n._id === id)!
-              setSelNeeds(prev => prev.some(n => n._id === id) ? prev.filter(n => n._id !== id) : [...prev, need])
+              const at = assetTypes.find(a => a._id === id)
+              if (at) toggleAssetType(at)
             }}
           />
         )}
 
-        {showCampaignGrid && (
+        {showBriefing && (
           <SubjectFilters
             subjects={subjects}
             selected={selSubjects}
@@ -320,55 +324,41 @@ export function CampaignCatalog({ goals, actions, needs, subjects, campaigns, is
           />
         )}
 
-        {showCampaignGrid && (
-          <CampaignGrid
-            campaigns={filteredCampaigns}
-            selected={selCampaigns}
-            onToggle={toggleCampaign}
-            onOpen={setDetailCampaign}
-          />
-        )}
-
-        {selectedCount > 0 && (
-          <BriefingSection
-            selectedCampaigns={Object.values(selCampaigns)}
-            campaignBriefings={campaignBriefings}
+        {showBriefing && (
+          <AssetBriefingSection
+            assetBriefings={assetBriefings}
             sharedFields={sharedFields}
-            onUpdateBriefing={setCampaignBriefings}
+            themes={themes}
+            selSubjects={selSubjects}
+            onUpdateBriefings={setAssetBriefings}
             onUpdateShared={setSharedFields}
           />
         )}
       </div>
 
-      <BottomBar count={selectedCount} onSummarise={() => setSummaryOpen(true)} onReset={resetAll} />
-
-      {detailCampaign && (
-        <DetailOverlay
-          campaign={detailCampaign}
-          isSelected={!!selCampaigns[detailCampaign._id]}
-          onToggle={() => toggleCampaign(detailCampaign)}
-          onClose={() => setDetailCampaign(null)}
-        />
-      )}
+      <BottomBar count={totalInstances} onSummarise={() => setSummaryOpen(true)} onReset={resetAll} />
 
       {summaryOpen && (
-          <SummaryModal
-            clientName={clientName}
-            clientCity={clientCity}
-            clientCountry={clientCountry}
-            selGoal={selGoal}
-            selAction={selAction}
-            customAction={customAction}
-            actionValidUntil={actionValidUntil}
-            actionScope={actionScope}
-            selNeeds={selNeeds}
-            selSubjects={selSubjects}
-            selCampaigns={Object.values(selCampaigns)}
-            campaignBriefings={campaignBriefings}
-            sharedFields={sharedFields}
-            onRemove={removeCampaign}
-            onClose={() => setSummaryOpen(false)}
-          />
+        <SummaryModal
+          clientName={clientName}
+          clientCity={clientCity}
+          clientCountry={clientCountry}
+          selGoal={selGoal}
+          selAction={selAction}
+          customAction={customAction}
+          actionValidUntil={actionValidUntil}
+          actionScope={actionScope}
+          selAssetTypes={selAssetTypes}
+          selSubjects={selSubjects}
+          assetBriefings={assetBriefings}
+          themes={themes}
+          sharedFields={sharedFields}
+          onRemove={(assetTypeId) => {
+            const at = selAssetTypes.find(a => a._id === assetTypeId)
+            if (at) toggleAssetType(at)
+          }}
+          onClose={() => setSummaryOpen(false)}
+        />
       )}
     </>
   )
