@@ -335,6 +335,67 @@
   color: #C8C5BE !important;
 }
 
+/* ── Always / optional index ─────────────────────────────────── */
+.indexBand {
+  background: #FBFBFB;
+  border-bottom: 1px solid #D4D0C8;
+  padding: 3rem 0;
+}
+
+.indexGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+.indexGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.indexTitle {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #0D2340;
+  margin: 0;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid #1A9E7E;
+}
+
+.indexLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.indexLink {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .6rem .25rem;
+  text-decoration: none;
+  color: #555;
+  font-size: .88rem;
+  font-weight: 600;
+  border-bottom: 1px solid #ECECEC;
+  transition: color .15s, padding-left .15s;
+}
+
+.indexLink:hover {
+  color: #0D2340;
+  padding-left: .6rem;
+}
+
+.indexDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* ── CTA section ─────────────────────────────────────────────── */
 .cta {
   background: #0D2340;
@@ -432,6 +493,11 @@
 
   .heroNav {
     width: 100%;
+  }
+
+  .indexGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
   .blockGrid {

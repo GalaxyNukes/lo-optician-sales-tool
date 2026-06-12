@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import type { Goal, Action, Need, Subject, Campaign, AssetType, Theme } from './types'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import type { Goal, Action, Subject, Campaign, AssetType, Theme } from './types'
 import { useI18n } from './i18n'
 import { Nav } from './Nav'
 import { ClientStep } from './ClientStep'
@@ -54,6 +54,7 @@ export interface AssetBriefing {
   blockType: string            // accent / grouping
   label: string
   icon: string                 // emoji from the asset type
+  heroImage?: string           // optional inspiration banner (resolved URL)
   accentColor: string
   instances: AssetBriefingInstance[]
 }
@@ -72,45 +73,20 @@ export function newAssetInstance(): AssetBriefingInstance {
   }
 }
 
-// ── Legacy campaign helpers (still used by the Library briefing utilities) ─────
-export function campaignMatchesBlockType(campaign: Campaign, typeId: string): boolean {
-  if (typeId === 'af-sticker') return Boolean(campaign.assetFilters?.includes('Stickering') || ['MOCKUP', 'POS'].includes(campaign.type))
-  if (typeId === 'af-banner') return campaign.assetFilters?.some(f => ['Banner', 'Vlag', 'Spandoek', 'Lightbox'].includes(f)) || false
-  if (typeId === 'af-print') return Boolean(campaign.type === 'MEDIA KIT' || campaign.assetFilters?.some(f => f.includes('Flyer') || f.includes('Poster') || f === 'DM'))
-  if (typeId === 'af-social') return campaign.assetFilters?.some(f => ['Meta ADS', 'Google ADS'].includes(f)) || false
-  if (typeId === 'af-email') return campaign.assetFilters?.includes('Email') || false
-  if (typeId === 'af-video') return campaign.assetFilters?.includes('Video') || false
-  if (typeId === 'af-landing') return Boolean(campaign.type === 'LANDING PAGE' || campaign.assetFilters?.includes('Landing Page'))
-  return false
+// ── Campaign → asset-type matching (Library "start briefing" handoff) ──────────
+interface CampaignSeed {
+  assetFilters?: string[]
+  prefill?: Campaign['prefill']
 }
 
-export function campaignMatchesNeed(campaign: Campaign, need: Need): boolean {
-  if (!need.briefingBlockType || need.briefingBlockType === 'none') return false
-
-  const linkedFilters = need.linkedAssetFilters ?? []
-  if (linkedFilters.length > 0) return campaign.assetFilters?.some(filter => linkedFilters.includes(filter)) || false
-
-  return campaignMatchesBlockType(campaign, need.briefingBlockType)
+// A Library campaign pre-selects the asset types whose linked filters it carries.
+export function getAssetTypesForCampaign(campaign: { assetFilters?: string[] }, assetTypes: AssetType[]): AssetType[] {
+  return assetTypes.filter(at =>
+    at.linkedAssetFilters?.some(filter => campaign.assetFilters?.includes(filter))
+  )
 }
 
-export function getTypesForCampaign(campaign: Campaign, needs: Need[]): string[] {
-  const needed: string[] = []
-  const add = (typeId: string) => { if (!needed.includes(typeId)) needed.push(typeId) }
-
-  needs.forEach(need => {
-    if (need.briefingBlockType && need.briefingBlockType !== 'none' && campaignMatchesNeed(campaign, need)) {
-      add(need.briefingBlockType)
-    }
-  })
-
-  ;['af-sticker', 'af-banner', 'af-print', 'af-social', 'af-email', 'af-video', 'af-landing'].forEach(typeId => {
-    if (campaignMatchesBlockType(campaign, typeId)) add(typeId)
-  })
-
-  return needed
-}
-
-export function getPrefillForCampaign(typeId: string, campaign: Campaign): Record<string, BriefingValue> {
+export function getPrefillForCampaign(typeId: string, campaign: { prefill?: Campaign['prefill'] }): Record<string, BriefingValue> {
   const pf = campaign.prefill
   if (!pf) return {}
   const result: Record<string, BriefingValue> = {}
@@ -163,6 +139,9 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
   // UI state
   const [summaryOpen, setSummaryOpen] = useState(false)
 
+  // Library → briefing seed (held until Steps 1–2 are done; see effects below)
+  const seedRef = useRef<CampaignSeed | null>(null)
+
   // Computed
   const isNotApplicableAction = selAction?._id === notApplicableAction._id
   const isActionChosen = Boolean(selAction && (!selAction.isCustom || customAction.trim()))
@@ -185,6 +164,41 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
     setSummaryOpen(false)
   }, [isActionReady])
 
+  // Read a Library handoff seed once on mount (then clear it from sessionStorage).
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('lo-seed-campaign')
+      if (raw) {
+        seedRef.current = JSON.parse(raw) as CampaignSeed
+        sessionStorage.removeItem('lo-seed-campaign')
+      }
+    } catch { /* ignore malformed seed */ }
+  }, [])
+
+  // Apply the seed the moment Step 3 becomes reachable (Steps 1–2 done). Fires once
+  // — guarded by the ref so re-toggling Step 2 later doesn't re-apply it, and so the
+  // isActionReady-false reset effect above can't wipe it before it's reachable.
+  useEffect(() => {
+    if (!isActionReady || !seedRef.current) return
+    const seed = seedRef.current
+    seedRef.current = null
+
+    const matched = getAssetTypesForCampaign(seed, assetTypes)
+    if (matched.length === 0) return
+
+    setSelAssetTypes(matched)
+    setAssetBriefings(matched.map((at, i) => ({
+      assetTypeId: at._id,
+      assetKey: at.key,
+      blockType: at.blockType,
+      label: at.label,
+      icon: at.icon || '🧩',
+      heroImage: at.heroImage,
+      accentColor: ACCENTS[i % ACCENTS.length],
+      instances: [{ ...newAssetInstance(), data: getPrefillForCampaign(at.blockType, seed) }],
+    })))
+  }, [isActionReady, assetTypes])
+
   const toggleAssetType = useCallback((assetType: AssetType) => {
     setSelAssetTypes(prev => {
       if (prev.some(a => a._id === assetType._id)) {
@@ -197,6 +211,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
         blockType: assetType.blockType,
         label: assetType.label,
         icon: assetType.icon || '🧩',
+        heroImage: assetType.heroImage,
         accentColor: ACCENTS[prev.length % ACCENTS.length],
         instances: [newAssetInstance()],
       }])

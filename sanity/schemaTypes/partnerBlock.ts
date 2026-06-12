@@ -1,6 +1,20 @@
 import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 
+// Per-category budget + running-time values (Activatiemenu A/B/C tiers).
+// Reused for categoryA / categoryB / categoryC.
+const categoryValueFields = [
+  defineField({ name: 'budgetMin',   title: 'Budget (van)', type: 'string' }),
+  defineField({ name: 'budgetMax',   title: 'Budget (tot)', type: 'string' }),
+  defineField({ name: 'budgetNote',  title: 'Budget note',  type: 'string' }),
+  defineField({
+    name: 'runningTime',
+    title: 'Looptijd',
+    type: 'string',
+    description: 'bv. "4 weken per kwartaal", "doorlopend", "2x per jaar"',
+  }),
+]
+
 export const partnerBlock = defineType({
   name: 'partnerBlock',
   title: 'Partner Activation Block',
@@ -94,11 +108,42 @@ export const partnerBlock = defineType({
             type: 'string',
             description: 'e.g. "Flyer A5", "Social post", "Bushokje mockup"',
           }),
+          defineField({
+            name: 'lang',
+            title: 'Taal (optioneel)',
+            type: 'string',
+            options: { list: [{ title: 'NL', value: 'nl' }, { title: 'FR', value: 'fr' }, { title: 'EN', value: 'en' }] },
+            description: 'Leeg = getoond in elke taal',
+          }),
         ],
       }],
     }),
+    defineField({
+      name: 'noVisualAssets',
+      title: 'Heeft bewust geen visuals',
+      type: 'boolean',
+      group: 'media',
+      initialValue: false,
+      description: 'Aanvinken voor activaties zonder beeld (bv. SEO). Toont een neutrale melding i.p.v. de "voeg toe via Studio"-prompt.',
+    }),
 
     // ── MENU / ONE-PAGER ─────────────────────────────────────────
+    defineField({
+      name: 'minCategory',
+      title: 'Zichtbaar vanaf categorie',
+      type: 'string',
+      group: 'menu',
+      options: {
+        list: [
+          { title: 'C — iedereen (A, B, C)', value: 'C' },
+          { title: 'B — alleen B en A',      value: 'B' },
+          { title: 'A — alleen A',           value: 'A' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'C',
+      description: 'Cascade: C-blokken zijn zichtbaar in alle 3 schermen, B-blokken in B+A, A-blokken enkel in A.',
+    }),
     defineField({
       name: 'timing',
       title: 'Timing',
@@ -116,27 +161,42 @@ export const partnerBlock = defineType({
         layout: 'radio',
       },
     }),
+
+    // Legacy flat budget — kept until the A/B/C migration runs, then removed in Segment A cleanup.
     defineField({
       name: 'budgetMin',
-      title: 'Budget (van)',
+      title: 'Budget (van) — legacy',
       type: 'string',
       group: 'menu',
-      description: 'e.g. "€500" — or use "Inbegrepen" / "Op kostprijs" as the only value',
+      description: 'Verplaatst naar Categorie A/B/C. Wordt verwijderd na migratie.',
+    }),
+    defineField({ name: 'budgetMax', title: 'Budget (tot) — legacy', type: 'string', group: 'menu' }),
+    defineField({ name: 'budgetNote', title: 'Budget note — legacy', type: 'string', group: 'menu' }),
+
+    defineField({
+      name: 'categoryA',
+      title: 'Categorie A — waarden',
+      type: 'object',
+      group: 'menu',
+      fields: categoryValueFields,
     }),
     defineField({
-      name: 'budgetMax',
-      title: 'Budget (tot)',
-      type: 'string',
+      name: 'categoryB',
+      title: 'Categorie B — waarden',
+      type: 'object',
       group: 'menu',
-      description: 'e.g. "€2.500" — leave empty when budgetMin is a label like "Inbegrepen"',
+      fields: categoryValueFields,
+      hidden: ({ document }) => document?.minCategory === 'A',
     }),
     defineField({
-      name: 'budgetNote',
-      title: 'Budget note',
-      type: 'string',
+      name: 'categoryC',
+      title: 'Categorie C — waarden',
+      type: 'object',
       group: 'menu',
-      description: 'e.g. "Partnervoordeel", "Afhankelijk van media", "Bestelbaar via DEX"',
+      fields: categoryValueFields,
+      hidden: ({ document }) => document?.minCategory !== 'C',
     }),
+
     defineField({
       name: 'impactLevel',
       title: 'Impact level (1–5)',

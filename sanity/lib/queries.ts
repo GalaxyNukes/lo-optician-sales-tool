@@ -31,7 +31,8 @@ export const subjectsQuery = groq`
 
 export const assetTypesQuery = groq`
   *[_type == "assetType" && active != false] | order(orderRank asc) {
-    _id, label, subtitle, key, blockType, icon, linkedAssetFilters
+    _id, label, subtitle, key, blockType, icon, linkedAssetFilters,
+    "heroImage": heroImage.asset->url
   }
 `
 
@@ -42,7 +43,7 @@ export const themesQuery = groq`
     title,
     season,
     "subjects": subjects[]->{ _id, label },
-    "designs": designs[]{ _key, title, "image": image.asset->url }
+    "designs": designs[]{ _key, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
   }
 `
 
@@ -122,8 +123,8 @@ export const allTaxonomyQuery = groq`{
   "goals":     *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
   "actions":   *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
   "needs":     *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
-  "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, linkedAssetFilters },
-  "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]{ _key, title, "image": image.asset->url } },
+  "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, linkedAssetFilters, "heroImage": heroImage.asset->url },
+  "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]{ _key, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url } },
   "subjects":  *[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
   "styles":    *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`
@@ -143,6 +144,7 @@ export const partnerBlocksQuery = groq`
     "images": images[] {
       _key,
       caption,
+      lang,
       "url": asset->url,
       "dimensions": asset->metadata.dimensions
     },
@@ -150,6 +152,11 @@ export const partnerBlocksQuery = groq`
     budgetMin,
     budgetMax,
     budgetNote,
+    minCategory,
+    categoryA,
+    categoryB,
+    categoryC,
+    noVisualAssets,
     impactLevel
   }
 `

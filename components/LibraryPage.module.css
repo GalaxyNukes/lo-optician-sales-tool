@@ -309,6 +309,8 @@
   overflow: hidden;
 }
 .overlayImg { object-fit: cover; }
+/* MEDIA KIT mockups mix portrait/landscape — letterbox instead of crop */
+.overlayImgContain { object-fit: contain; }
 .overlayTypeBadge {
   position: absolute;
   top: 1rem;
@@ -374,6 +376,20 @@
   gap: 1rem;
   background: #fff;
 }
+.overlayCta {
+  margin-top: auto;
+  padding: .8rem 1.25rem;
+  background: #0D2340;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.overlayCta:hover { opacity: .9; }
 .overlayMeta { display: flex; gap: .5rem; flex-wrap: wrap; }
 .overlayStyle {
   font-size: .62rem;

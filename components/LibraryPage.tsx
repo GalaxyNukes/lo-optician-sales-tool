@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Nav } from './Nav'
 import { useI18n } from './i18n'
@@ -19,9 +20,18 @@ const TYPE_COLORS: Record<string, string> = {
 // ── Horizontal detail overlay ─────────────────────────────────────────────────
 function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: () => void }) {
   const { copy, translateCampaignType } = useI18n()
+  const router = useRouter()
   const [activeImg, setActiveImg] = useState(0)
   const imgs = c.mockups?.filter(Boolean).length ? c.mockups : [c.thumbnail].filter(Boolean)
   const typeColor = TYPE_COLORS[c.type] || '#0D2340'
+
+  // Seed a new briefing from this campaign, then navigate to the builder.
+  const startBriefing = () => {
+    try {
+      sessionStorage.setItem('lo-seed-campaign', JSON.stringify({ assetFilters: c.assetFilters, prefill: c.prefill }))
+    } catch { /* ignore */ }
+    router.push('/')
+  }
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -44,7 +54,7 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
         <div className={styles.overlayLeft}>
           <div className={styles.overlayMainImg}>
             {imgs[activeImg] && (
-              <Image src={imgs[activeImg]} alt={c.title} fill sizes="50vw" className={styles.overlayImg} priority />
+              <Image src={imgs[activeImg]} alt={c.title} fill sizes="50vw" className={`${styles.overlayImg} ${c.type === 'MEDIA KIT' ? styles.overlayImgContain : ''}`} priority />
             )}
             {/* Type badge */}
             <span className={styles.overlayTypeBadge} style={{ background: typeColor }}>{translateCampaignType(c.type)}</span>
@@ -111,6 +121,10 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
               </div>
             </div>
           )}
+
+          <button className={styles.overlayCta} onClick={startBriefing}>
+            {copy.library.startBriefing}
+          </button>
         </div>
       </div>
     </div>

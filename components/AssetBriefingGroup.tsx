@@ -61,6 +61,12 @@ export function AssetBriefingGroup({ briefing, accent, themes, selSubjects, onUp
       </div>
       {!collapsed && (
         <div className={bs.campaignBody}>
+          {briefing.heroImage && (
+            <div className={styles.heroBanner}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={briefing.heroImage} alt="" />
+            </div>
+          )}
           {briefing.instances.map((inst, index) => (
             <InstanceCard
               key={inst.id}
@@ -135,6 +141,7 @@ function InstanceCard({
           <AssetFields assetKey={assetKey} data={inst.data} onChange={onField} />
         ) : (
           <ThemeDesignPicker
+            assetKey={assetKey}
             themes={themes}
             selSubjects={selSubjects}
             selectedThemeId={inst.selectedThemeId}

@@ -67,6 +67,13 @@ export const assetType = defineType({
       description: 'Emoji shown on the Step 3 card, e.g. 🖨️',
     }),
     defineField({
+      name: 'heroImage',
+      title: 'Inspiratiebeeld (optioneel)',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Klein inspiratiebeeld bovenaan de briefinggroep (bv. voor POS).',
+    }),
+    defineField({
       name: 'linkedAssetFilters',
       title: 'Linked asset filters',
       type: 'array',

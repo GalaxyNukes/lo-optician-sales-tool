@@ -1,7 +1,15 @@
 'use client'
 
 import type React from 'react'
+import { useI18n } from './i18n'
 import styles from './BrochurePage.module.css'
+
+export interface CategoryValues {
+  budgetMin?: string
+  budgetMax?: string
+  budgetNote?: string
+  runningTime?: string
+}
 
 export interface PartnerBlock {
   _id: string
@@ -12,11 +20,17 @@ export interface PartnerBlock {
   description: string
   deliverables?: string[]
   warning?: string
-  images?: Array<{ _key: string; url: string; caption?: string; dimensions?: { width: number; height: number } }>
+  images?: Array<{ _key: string; url: string; caption?: string; lang?: string; dimensions?: { width: number; height: number } }>
   timing?: string
+  // Legacy flat budget — retained until the A/B/C migration; superseded by categoryA/B/C.
   budgetMin?: string
   budgetMax?: string
   budgetNote?: string
+  minCategory?: 'A' | 'B' | 'C'
+  categoryA?: CategoryValues
+  categoryB?: CategoryValues
+  categoryC?: CategoryValues
+  noVisualAssets?: boolean
   impactLevel?: number
 }
 
@@ -31,8 +45,29 @@ const BENTO_PATTERNS: Array<Array<React.CSSProperties>> = [
   [{ gridColumn: '1 / 2', gridRow: '1' }, { gridColumn: '2 / 3', gridRow: '1' }, { gridColumn: '1 / 2', gridRow: '2' }, { gridColumn: '2 / 3', gridRow: '2' }],
 ]
 
-function BlockBento({ images }: { images: PartnerBlock['images'] }) {
-  if (!images || images.length === 0) {
+const ALWAYS_TIMINGS = new Set(['always', 'ongoing', 'seasonal'])
+
+function BlockBento({ images, noVisualAssets }: { images: PartnerBlock['images']; noVisualAssets?: boolean }) {
+  const { lang } = useI18n()
+  const all = images ?? []
+  // Filter images to the active language; untagged images show in every language.
+  // If nothing is tagged for this language yet, fall back to the full set (never an empty gallery).
+  const langFiltered = all.filter(img => !img.lang || img.lang === lang)
+  const shown = langFiltered.length ? langFiltered : all
+
+  if (shown.length === 0) {
+    if (noVisualAssets) {
+      return (
+        <div className={styles.bentoEmpty}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9 12h6" />
+          </svg>
+          <span>Geen visuele assets</span>
+          <span className={styles.bentoEmptySub}>voor deze activatie</span>
+        </div>
+      )
+    }
     return (
       <div className={styles.bentoEmpty}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
@@ -46,12 +81,12 @@ function BlockBento({ images }: { images: PartnerBlock['images'] }) {
     )
   }
 
-  const count = Math.min(images.length, 4)
+  const count = Math.min(shown.length, 4)
   const pattern = BENTO_PATTERNS[count - 1]
 
   return (
     <div className={styles.bento}>
-      {images.slice(0, count).map((img, i) => (
+      {shown.slice(0, count).map((img, i) => (
         <div key={img._key} className={styles.bentoCell} style={pattern[i]}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -63,6 +98,41 @@ function BlockBento({ images }: { images: PartnerBlock['images'] }) {
         </div>
       ))}
     </div>
+  )
+}
+
+// Always / optional index — two grouped jump-link lists above the per-block sections.
+function GroupedIndex({ blocks }: { blocks: PartnerBlock[] }) {
+  if (blocks.length === 0) return null
+  const always = blocks.filter(b => ALWAYS_TIMINGS.has(b.timing || ''))
+  const optional = blocks.filter(b => !ALWAYS_TIMINGS.has(b.timing || ''))
+
+  const renderGroup = (title: string, items: PartnerBlock[]) => {
+    if (items.length === 0) return null
+    return (
+      <div className={styles.indexGroup}>
+        <h3 className={styles.indexTitle}>{title}</h3>
+        <div className={styles.indexLinks}>
+          {items.map(b => (
+            <a key={b._id} href={`#block-${b._id}`} className={styles.indexLink}>
+              <span className={styles.indexDot} style={{ background: b.badgeColor || '#0D2340' }} />
+              <span>{b.title}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <section className={styles.indexBand}>
+      <div className={styles.container}>
+        <div className={styles.indexGrid}>
+          {renderGroup('Wat we altijd voor je doen', always)}
+          {renderGroup('Wat je kan activeren', optional)}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -107,7 +177,7 @@ function BlockSection({ block, index }: { block: PartnerBlock; index: number }) 
             )}
           </div>
           <div className={styles.blockImages}>
-            <BlockBento images={block.images} />
+            <BlockBento images={block.images} noVisualAssets={block.noVisualAssets} />
           </div>
         </div>
       </div>
@@ -166,6 +236,8 @@ export function BrochurePage({ blocks }: Props) {
           </div>
         </div>
       </section>
+
+      <GroupedIndex blocks={blocks} />
 
       {blocks.length > 0 ? (
         blocks.map((block, index) => (

@@ -53,6 +53,7 @@ export const theme = defineType({
           fields: [
             defineField({ name: 'title', title: 'Design name', type: 'string', validation: (R) => R.required() }),
             defineField({ name: 'image', title: 'Design image', type: 'image', options: { hotspot: true }, validation: (R) => R.required() }),
+            defineField({ name: 'previewVideo', title: 'Scroll-preview (mp4, optioneel)', type: 'file', options: { accept: 'video/mp4' }, description: 'Alleen gebruikt voor landingspagina-designs.' }),
           ],
           preview: {
             select: { title: 'title', media: 'image' },

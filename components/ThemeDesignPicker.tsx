@@ -15,7 +15,18 @@ const CHECK = (
   </svg>
 )
 
+type Frame = 'social' | 'phone' | 'browser' | 'flat'
+
+// Channel chrome around each design thumbnail — purely presentational, keyed by asset type.
+function frameFor(assetKey: string): Frame {
+  if (assetKey === 'social-meta' || assetKey === 'social-google') return 'social'
+  if (assetKey === 'email') return 'phone'
+  if (assetKey === 'landing') return 'browser'
+  return 'flat'
+}
+
 interface Props {
+  assetKey: string
   themes: Theme[]
   selSubjects: Subject[]
   selectedThemeId: string | null
@@ -27,6 +38,7 @@ interface Props {
 }
 
 export function ThemeDesignPicker({
+  assetKey,
   themes,
   selSubjects,
   selectedThemeId,
@@ -38,6 +50,7 @@ export function ThemeDesignPicker({
 }: Props) {
   const { copy } = useI18n()
   const isCustom = selectedThemeId === CUSTOM_DESIGN
+  const frame = frameFor(assetKey)
 
   const filtered = selSubjects.length
     ? themes.filter(theme => theme.subjects?.some(s => selSubjects.some(ss => ss._id === s._id)))
@@ -77,10 +90,26 @@ export function ThemeDesignPicker({
                     className={`${styles.designCard} ${on ? styles.designCardOn : ''}`}
                     onClick={() => onPickDesign(activeTheme._id, design._key, design.title)}
                   >
+                    {frame === 'social' && (
+                      <div className={styles.frameSocialHead}><span className={styles.frameAvatar} /><span className={styles.frameLines} /></div>
+                    )}
+                    {frame === 'browser' && (
+                      <div className={styles.frameBrowserBar}><span className={styles.frameDot} /><span className={styles.frameDot} /><span className={styles.frameDot} /><span className={styles.frameAddr} /></div>
+                    )}
+                    {frame === 'phone' && (
+                      <div className={styles.framePhoneHead}><span className={styles.framePhoneNotch} /></div>
+                    )}
                     <div className={styles.designThumb}>
-                      <Image src={design.image || FALLBACK_IMAGE_DATA_URI} alt={design.title} fill sizes="160px" style={{ objectFit: 'cover' }} />
+                      {frame === 'browser' && design.previewVideo ? (
+                        <video className={styles.designVideo} src={design.previewVideo} muted loop autoPlay playsInline />
+                      ) : (
+                        <Image src={design.image || FALLBACK_IMAGE_DATA_URI} alt={design.title} fill sizes="200px" style={{ objectFit: 'cover' }} />
+                      )}
                       {on && <span className={styles.designCheck}>{CHECK}</span>}
                     </div>
+                    {frame === 'social' && (
+                      <div className={styles.frameSocialFoot}><span className={styles.frameLineShort} /></div>
+                    )}
                     <div className={styles.designTitle}>{design.title}</div>
                   </div>
                 )

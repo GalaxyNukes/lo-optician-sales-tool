@@ -34,12 +34,14 @@ export interface AssetType {
   blockType: string    // accent / grouping bucket (af-social, af-print, …)
   icon?: string        // emoji shown on the Step 3 card
   linkedAssetFilters?: string[]
+  heroImage?: string   // optional inspiration banner (resolved URL, e.g. POS)
 }
 
 export interface ThemeDesign {
   _key: string
   title: string
-  image: string        // resolved URL
+  image: string         // resolved URL
+  previewVideo?: string // resolved URL — landing scroll preview (mp4)
 }
 
 export interface Theme {

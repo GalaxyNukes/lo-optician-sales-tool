@@ -165,10 +165,49 @@
 .footerLeft  { font-size: 8.5px; color: rgba(255,255,255,.4); }
 .footerRight { font-size: 8.5px; color: #1A9E7E; font-weight: 600; }
 
+/* ── Category tabs ── */
+.tabs {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  gap: 4px;
+  background: #ECEAE4;
+  padding: 4px;
+  border-radius: 100px;
+}
+.tab {
+  flex: 1;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #888884;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tab:hover { color: #0D2340; }
+.tabOn { background: #fff; color: #0D2340; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+/* ── Titled table sections (always / optional) ── */
+.tableSectionTitle {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #0D2340;
+  padding: 12px 22px 6px;
+  background: #fff;
+}
+.colLooptijd { width: 100px; }
+.runningTime { font-size: 9px; color: #555; line-height: 1.35; display: inline-block; }
+
 /* ── Print mode ── */
 @media print {
   .root    { padding: 0; background: #fff; }
-  .toolbar { display: none; }
+  .toolbar, .tabs { display: none; }
   .sheet   { box-shadow: none; border-radius: 0; max-width: 100%; }
 }
-.printMode .toolbar { display: none; }
+.printMode .toolbar, .printMode .tabs { display: none; }
