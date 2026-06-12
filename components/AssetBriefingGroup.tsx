@@ -78,8 +78,8 @@ export function AssetBriefingGroup({ briefing, accent, themes, selSubjects, onUp
               selSubjects={selSubjects}
               onField={(key, value) => setField(inst.id, key, value)}
               onRemove={() => removeInstance(inst.id)}
-              onPickDesign={(themeId, key, title) => patchInstance(inst.id, { selectedThemeId: themeId, selectedDesignKey: key, selectedDesignTitle: title })}
-              onPickCustom={() => patchInstance(inst.id, { selectedThemeId: CUSTOM_DESIGN, selectedDesignKey: null, selectedDesignTitle: null })}
+              onPickDesign={(themeId, id, title) => patchInstance(inst.id, { selectedThemeId: themeId, selectedDesignId: id, selectedDesignTitle: title })}
+              onPickCustom={() => patchInstance(inst.id, { selectedThemeId: CUSTOM_DESIGN, selectedDesignId: null, selectedDesignTitle: null })}
               onCustomNote={note => patchInstance(inst.id, { customDesignNote: note })}
             />
           ))}
@@ -145,7 +145,7 @@ function InstanceCard({
             themes={themes}
             selSubjects={selSubjects}
             selectedThemeId={inst.selectedThemeId}
-            selectedDesignKey={inst.selectedDesignKey}
+            selectedDesignId={inst.selectedDesignId}
             customNote={inst.customDesignNote}
             onPickDesign={onPickDesign}
             onPickCustom={onPickCustom}

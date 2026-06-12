@@ -99,49 +99,34 @@ export const campaign = defineType({
       description: 'Used for subject filter chips below the grid',
     }),
     defineField({
-      name: 'relatedNeeds',
-      title: 'Related needs (Step 3) ★',
+      name: 'assets',
+      title: 'Assets in this campaign ★',
       type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'need' }] }],
       group: 'targeting',
-      description: 'Which Step 3 needs will show this campaign. A campaign appears when any of its related needs are selected.',
-    }),
-    defineField({
-      name: 'assetFilters',
-      title: 'Asset filter tags',
-      type: 'array',
-      of: [{ type: 'string' }],
-      group: 'targeting',
-      description: 'Tag this campaign so it appears when matching needs are selected in Step 3',
-      options: {
-        list: [
-          // Digital
-          { title: 'Meta ADS', value: 'Meta ADS' },
-          { title: 'Google ADS', value: 'Google ADS' },
-          // Print formats
-          { title: 'Flyer', value: 'Flyer' },
-          { title: 'Flyer A6', value: 'Flyer A6' },
-          { title: 'Flyer A5', value: 'Flyer A5' },
-          { title: 'Flyer A4', value: 'Flyer A4' },
-          { title: 'Poster A3', value: 'Poster A3' },
-          { title: 'Poster A2', value: 'Poster A2' },
-          { title: 'Poster A1', value: 'Poster A1' },
-          { title: 'DM / Direct mail', value: 'DM' },
-          // Banners & outdoor
-          { title: 'Banner', value: 'Banner' },
-          { title: 'Spandoek', value: 'Spandoek' },
-          { title: 'Vlag', value: 'Vlag' },
-          { title: 'Reboard', value: 'Reboard' },
-          { title: 'Lightbox', value: 'Lightbox' },
-          // In-store
-          { title: 'Stickering', value: 'Stickering' },
-          { title: 'POS', value: 'POS' },
-          // Other
-          { title: 'Email', value: 'Email' },
-          { title: 'Video', value: 'Video' },
-          { title: 'Landing Page', value: 'Landing Page' },
+      description: 'The asset types this campaign produces (from Step 3 / Asset Types), each optionally paired with a design from Themes & Designs. Used to pre-build a briefing when an account manager starts from this campaign.',
+      of: [{
+        type: 'object',
+        name: 'campaignAsset',
+        fields: [
+          defineField({
+            name: 'assetType',
+            title: 'Asset type (Step 3)',
+            type: 'reference',
+            to: [{ type: 'assetType' }],
+            validation: (R) => R.required(),
+          }),
+          defineField({
+            name: 'design',
+            title: 'Design (optioneel)',
+            type: 'reference',
+            to: [{ type: 'design' }],
+          }),
         ],
-      },
+        preview: {
+          select: { title: 'assetType.label', subtitle: 'design.title', media: 'design.image' },
+          prepare: ({ title, subtitle, media }) => ({ title: title || 'Asset', subtitle: subtitle ? `→ ${subtitle}` : 'geen design', media }),
+        },
+      }],
     }),
 
     // ── BRIEFING PREFILL ─────────────────────────

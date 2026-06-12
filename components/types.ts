@@ -33,12 +33,11 @@ export interface AssetType {
   key: string          // selects the frontend field set
   blockType: string    // accent / grouping bucket (af-social, af-print, …)
   icon?: string        // emoji shown on the Step 3 card
-  linkedAssetFilters?: string[]
   heroImage?: string   // optional inspiration banner (resolved URL, e.g. POS)
 }
 
-export interface ThemeDesign {
-  _key: string
+export interface Design {
+  _id: string
   title: string
   image: string         // resolved URL
   previewVideo?: string // resolved URL — landing scroll preview (mp4)
@@ -49,7 +48,12 @@ export interface Theme {
   title: string
   season?: string
   subjects: { _id: string; label: string }[]
-  designs: ThemeDesign[]
+  designs: Design[]
+}
+
+export interface CampaignAsset {
+  assetType: AssetType
+  design?: Design
 }
 
 export interface CampaignGoal {
@@ -70,7 +74,7 @@ export interface Campaign {
   goals: CampaignGoal[]
   visualStyle?: { _id: string; label: string }
   subjects: { _id: string; label: string }[]
-  assetFilters: string[]
+  assets: CampaignAsset[]
   prefill?: {
     printPaper?: string
     printQty?: number

@@ -60,8 +60,8 @@ export function SummaryModal({
 
   const designLabel = (inst: AssetBriefingInstance): { label: string; note?: string } | null => {
     if (inst.selectedThemeId === CUSTOM_DESIGN) return { label: copy.summary.customDesign, note: inst.customDesignNote || undefined }
-    if (inst.selectedThemeId && inst.selectedDesignKey) {
-      const theme = themes.find(t => t._id === inst.selectedThemeId)
+    if (inst.selectedDesignId) {
+      const theme = inst.selectedThemeId ? themes.find(t => t._id === inst.selectedThemeId) : null
       const title = inst.selectedDesignTitle || ''
       return { label: theme ? `${theme.title} · ${title}` : title }
     }

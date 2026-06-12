@@ -31,19 +31,19 @@ export const subjectsQuery = groq`
 
 export const assetTypesQuery = groq`
   *[_type == "assetType" && active != false] | order(orderRank asc) {
-    _id, label, subtitle, key, blockType, icon, linkedAssetFilters,
+    _id, label, subtitle, key, blockType, icon,
     "heroImage": heroImage.asset->url
   }
 `
 
-// Themes group designs. Designs are resolved to URLs inline (same pattern as thumbnails).
+// Themes group designs — now references to design documents.
 export const themesQuery = groq`
   *[_type == "theme" && active != false] | order(orderRank asc) {
     _id,
     title,
     season,
     "subjects": subjects[]->{ _id, label },
-    "designs": designs[]{ _key, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
+    "designs": designs[]->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
   }
 `
 
@@ -71,13 +71,15 @@ export const campaignsQuery = groq`
     "goals": goals[]->{ _id, label },
     "visualStyle": visualStyle->{ _id, label },
     "subjects": subjects[]->{ _id, label },
-    "relatedNeeds": relatedNeeds[]->{ _id },
-    assetFilters,
+    "assets": assets[]{
+      "assetType": assetType->{ _id, label, subtitle, key, blockType, icon, "heroImage": heroImage.asset->url },
+      "design": design->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
+    },
     prefill
   }
 `
 
-// All campaigns including drafts — used in preview mode
+// All campaigns including drafts — used in preview mode + the Library
 export const campaignsPreviewQuery = groq`
   *[_type == "campaign"] | order(_createdAt desc) {
     _id,
@@ -92,8 +94,10 @@ export const campaignsPreviewQuery = groq`
     "goals": goals[]->{ _id, label },
     "visualStyle": visualStyle->{ _id, label },
     "subjects": subjects[]->{ _id, label },
-    "relatedNeeds": relatedNeeds[]->{ _id },
-    assetFilters,
+    "assets": assets[]{
+      "assetType": assetType->{ _id, label, subtitle, key, blockType, icon, "heroImage": heroImage.asset->url },
+      "design": design->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
+    },
     prefill
   }
 `
@@ -113,7 +117,10 @@ export const campaignByIdQuery = groq`
     "goals": goals[]->{ _id, label },
     "visualStyle": visualStyle->{ _id, label },
     "subjects": subjects[]->{ _id, label },
-    assetFilters,
+    "assets": assets[]{
+      "assetType": assetType->{ _id, label, subtitle, key, blockType, icon, "heroImage": heroImage.asset->url },
+      "design": design->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url }
+    },
     prefill
   }
 `
@@ -123,8 +130,8 @@ export const allTaxonomyQuery = groq`{
   "goals":     *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
   "actions":   *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
   "needs":     *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
-  "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, linkedAssetFilters, "heroImage": heroImage.asset->url },
-  "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]{ _key, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url } },
+  "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, "heroImage": heroImage.asset->url },
+  "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url } },
   "subjects":  *[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
   "styles":    *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`

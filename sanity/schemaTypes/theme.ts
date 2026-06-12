@@ -44,22 +44,8 @@ export const theme = defineType({
       name: 'designs',
       title: 'Designs',
       type: 'array',
-      description: 'The selectable design blocks inside this theme.',
-      of: [
-        defineField({
-          name: 'design',
-          title: 'Design',
-          type: 'object',
-          fields: [
-            defineField({ name: 'title', title: 'Design name', type: 'string', validation: (R) => R.required() }),
-            defineField({ name: 'image', title: 'Design image', type: 'image', options: { hotspot: true }, validation: (R) => R.required() }),
-            defineField({ name: 'previewVideo', title: 'Scroll-preview (mp4, optioneel)', type: 'file', options: { accept: 'video/mp4' }, description: 'Alleen gebruikt voor landingspagina-designs.' }),
-          ],
-          preview: {
-            select: { title: 'title', media: 'image' },
-          },
-        }),
-      ],
+      description: 'Designs grouped under this theme. Pick existing Design documents, or create a new one inline.',
+      of: [{ type: 'reference', to: [{ type: 'design' }] }],
     }),
     defineField({
       name: 'active',

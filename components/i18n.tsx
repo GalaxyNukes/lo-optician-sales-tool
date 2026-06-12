@@ -90,6 +90,7 @@ const translations = {
     library: {
       campaignCount: (count: number) => `${count} campagnes`,
       startBriefing: 'Start briefing met deze opzet',
+      toBriefing: 'Naar briefing →',
     },
     summary: {
       title: 'Jouw campagnepakket',
@@ -281,6 +282,7 @@ const translations = {
     library: {
       campaignCount: (count: number) => `${count} campagnes`,
       startBriefing: 'Démarrer un briefing avec cette configuration',
+      toBriefing: 'Vers le briefing →',
     },
     summary: {
       title: 'Votre pack campagne',
@@ -472,6 +474,7 @@ const translations = {
     library: {
       campaignCount: (count: number) => `${count} campaigns`,
       startBriefing: 'Start a briefing with this setup',
+      toBriefing: 'To briefing →',
     },
     summary: {
       title: 'Your campaign package',

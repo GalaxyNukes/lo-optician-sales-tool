@@ -74,22 +74,6 @@ export const assetType = defineType({
       description: 'Klein inspiratiebeeld bovenaan de briefinggroep (bv. voor POS).',
     }),
     defineField({
-      name: 'linkedAssetFilters',
-      title: 'Linked asset filters',
-      type: 'array',
-      of: [{ type: 'string' }],
-      description: 'Reference tags (kept for parity with the legacy need taxonomy).',
-      options: {
-        list: [
-          'Meta ADS', 'Google ADS',
-          'Flyer A4/A5/A6', 'Poster A1-A3', 'DM',
-          'Banner', 'Spandoek', 'Vlag', 'Reboard', 'Lightbox',
-          'Stickering', 'POS',
-          'Email', 'Video', 'Landing Page',
-        ].map((v) => ({ title: v, value: v })),
-      },
-    }),
-    defineField({
       name: 'active',
       title: 'Active',
       type: 'boolean',

@@ -30,9 +30,9 @@ interface Props {
   themes: Theme[]
   selSubjects: Subject[]
   selectedThemeId: string | null
-  selectedDesignKey: string | null
+  selectedDesignId: string | null
   customNote: string
-  onPickDesign: (themeId: string, designKey: string, designTitle: string) => void
+  onPickDesign: (themeId: string, designId: string, designTitle: string) => void
   onPickCustom: () => void
   onCustomNote: (note: string) => void
 }
@@ -42,7 +42,7 @@ export function ThemeDesignPicker({
   themes,
   selSubjects,
   selectedThemeId,
-  selectedDesignKey,
+  selectedDesignId,
   customNote,
   onPickDesign,
   onPickCustom,
@@ -83,12 +83,12 @@ export function ThemeDesignPicker({
           {activeTheme && (activeTheme.designs?.length ? (
             <div className={styles.designGrid}>
               {activeTheme.designs.map(design => {
-                const on = !isCustom && selectedThemeId === activeTheme._id && selectedDesignKey === design._key
+                const on = !isCustom && selectedDesignId === design._id
                 return (
                   <div
-                    key={design._key}
+                    key={design._id}
                     className={`${styles.designCard} ${on ? styles.designCardOn : ''}`}
-                    onClick={() => onPickDesign(activeTheme._id, design._key, design.title)}
+                    onClick={() => onPickDesign(activeTheme._id, design._id, design.title)}
                   >
                     {frame === 'social' && (
                       <div className={styles.frameSocialHead}><span className={styles.frameAvatar} /><span className={styles.frameLines} /></div>

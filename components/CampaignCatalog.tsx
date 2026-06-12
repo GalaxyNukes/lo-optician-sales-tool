@@ -43,7 +43,7 @@ export interface AssetBriefingInstance {
   id: string
   data: Record<string, BriefingValue>
   selectedThemeId: string | null
-  selectedDesignKey: string | null
+  selectedDesignId: string | null
   selectedDesignTitle: string | null
   customDesignNote: string
 }
@@ -67,23 +67,27 @@ export function newAssetInstance(): AssetBriefingInstance {
     id: uid(),
     data: {},
     selectedThemeId: null,
-    selectedDesignKey: null,
+    selectedDesignId: null,
     selectedDesignTitle: null,
     customDesignNote: '',
   }
 }
 
-// ── Campaign → asset-type matching (Library "start briefing" handoff) ──────────
-interface CampaignSeed {
-  assetFilters?: string[]
-  prefill?: Campaign['prefill']
+// ── Library "start briefing" handoff ───────────────────────────────────────────
+// A campaign hands off a list of (asset type + optional design) pairs, plus the
+// optician / goal / action context gathered in the Library pop-up.
+export interface SeedAsset {
+  assetTypeId: string
+  designId?: string | null
+  designTitle?: string | null
 }
 
-// A Library campaign pre-selects the asset types whose linked filters it carries.
-export function getAssetTypesForCampaign(campaign: { assetFilters?: string[] }, assetTypes: AssetType[]): AssetType[] {
-  return assetTypes.filter(at =>
-    at.linkedAssetFilters?.some(filter => campaign.assetFilters?.includes(filter))
-  )
+export interface CampaignSeed {
+  client?: { name: string; city: string; country: string }
+  goalId?: string | null
+  action?: { id: string; custom?: string; validUntil?: string; scope?: 'store' | 'online' | 'na' } | null
+  prefill?: Campaign['prefill']
+  assets: SeedAsset[]
 }
 
 export function getPrefillForCampaign(typeId: string, campaign: { prefill?: Campaign['prefill'] }): Record<string, BriefingValue> {
@@ -164,40 +168,78 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
     setSummaryOpen(false)
   }, [isActionReady])
 
-  // Read a Library handoff seed once on mount (then clear it from sessionStorage).
+  // Read a Library handoff seed once on mount (then clear it). Pre-fill the optician
+  // details + Steps 1–2 if the Library pop-up provided them; assets apply below.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('lo-seed-campaign')
-      if (raw) {
-        seedRef.current = JSON.parse(raw) as CampaignSeed
-        sessionStorage.removeItem('lo-seed-campaign')
+      if (!raw) return
+      sessionStorage.removeItem('lo-seed-campaign')
+      const seed = JSON.parse(raw) as CampaignSeed
+      seedRef.current = seed
+
+      if (seed.client) {
+        setClientName(seed.client.name)
+        setClientCity(seed.client.city)
+        setClientCountry(seed.client.country)
+        setClientReady(true)
+      }
+      if (seed.goalId) {
+        const g = goals.find(x => x._id === seed.goalId)
+        if (g) setSelGoal(g)
+      }
+      if (seed.action) {
+        const a = step2Actions.find(x => x._id === seed.action!.id)
+        if (a) {
+          setSelAction(a)
+          setCustomAction(seed.action.custom || '')
+          setActionValidUntil(seed.action.validUntil || '')
+          setActionScope(seed.action.scope || '')
+        }
       }
     } catch { /* ignore malformed seed */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Apply the seed the moment Step 3 becomes reachable (Steps 1–2 done). Fires once
-  // — guarded by the ref so re-toggling Step 2 later doesn't re-apply it, and so the
-  // isActionReady-false reset effect above can't wipe it before it's reachable.
+  // — ref-guarded so re-toggling Step 2 can't re-apply it, and so the reset effect
+  // above can't wipe it first. One group per asset type, one instance per campaign
+  // asset, with its design pre-selected.
   useEffect(() => {
     if (!isActionReady || !seedRef.current) return
     const seed = seedRef.current
     seedRef.current = null
+    if (!seed.assets?.length) return
 
-    const matched = getAssetTypesForCampaign(seed, assetTypes)
-    if (matched.length === 0) return
+    const groups: { at: AssetType; entries: SeedAsset[] }[] = []
+    for (const sa of seed.assets) {
+      const at = assetTypes.find(a => a._id === sa.assetTypeId)
+      if (!at) continue
+      let group = groups.find(g => g.at._id === at._id)
+      if (!group) { group = { at, entries: [] }; groups.push(group) }
+      group.entries.push(sa)
+    }
+    if (groups.length === 0) return
 
-    setSelAssetTypes(matched)
-    setAssetBriefings(matched.map((at, i) => ({
-      assetTypeId: at._id,
-      assetKey: at.key,
-      blockType: at.blockType,
-      label: at.label,
-      icon: at.icon || '🧩',
-      heroImage: at.heroImage,
+    setSelAssetTypes(groups.map(g => g.at))
+    setAssetBriefings(groups.map((g, i) => ({
+      assetTypeId: g.at._id,
+      assetKey: g.at.key,
+      blockType: g.at.blockType,
+      label: g.at.label,
+      icon: g.at.icon || '🧩',
+      heroImage: g.at.heroImage,
       accentColor: ACCENTS[i % ACCENTS.length],
-      instances: [{ ...newAssetInstance(), data: getPrefillForCampaign(at.blockType, seed) }],
+      instances: g.entries.map(sa => ({
+        ...newAssetInstance(),
+        data: getPrefillForCampaign(g.at.blockType, seed),
+        selectedThemeId: sa.designId ? (themes.find(t => t.designs?.some(d => d._id === sa.designId))?._id ?? null) : null,
+        selectedDesignId: sa.designId ?? null,
+        selectedDesignTitle: sa.designTitle ?? null,
+      })),
     })))
-  }, [isActionReady, assetTypes])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActionReady, assetTypes, themes])
 
   const toggleAssetType = useCallback((assetType: AssetType) => {
     setSelAssetTypes(prev => {

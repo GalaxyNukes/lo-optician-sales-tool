@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Nav } from './Nav'
 import { useI18n } from './i18n'
-import type { Campaign, Subject } from './types'
+import type { Campaign, Subject, Goal, Action } from './types'
 import { FALLBACK_IMAGE_DATA_URI } from './imageFallback'
+import { LibraryStartModal } from './LibraryStartModal'
 import styles from './LibraryPage.module.css'
 
 const TYPE_COLORS: Record<string, string> = {
@@ -18,20 +18,11 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 // ── Horizontal detail overlay ─────────────────────────────────────────────────
-function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: () => void }) {
+function DetailOverlay({ campaign: c, onClose, onStartBriefing }: { campaign: Campaign; onClose: () => void; onStartBriefing: (campaign: Campaign) => void }) {
   const { copy, translateCampaignType } = useI18n()
-  const router = useRouter()
   const [activeImg, setActiveImg] = useState(0)
   const imgs = c.mockups?.filter(Boolean).length ? c.mockups : [c.thumbnail].filter(Boolean)
   const typeColor = TYPE_COLORS[c.type] || '#0D2340'
-
-  // Seed a new briefing from this campaign, then navigate to the builder.
-  const startBriefing = () => {
-    try {
-      sessionStorage.setItem('lo-seed-campaign', JSON.stringify({ assetFilters: c.assetFilters, prefill: c.prefill }))
-    } catch { /* ignore */ }
-    router.push('/')
-  }
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -122,7 +113,7 @@ function DetailOverlay({ campaign: c, onClose }: { campaign: Campaign; onClose: 
             </div>
           )}
 
-          <button className={styles.overlayCta} onClick={startBriefing}>
+          <button className={styles.overlayCta} onClick={() => onStartBriefing(c)}>
             {copy.library.startBriefing}
           </button>
         </div>
@@ -207,15 +198,18 @@ function getSize(index: number): CardSize {
 interface Props {
   campaigns: Campaign[]
   subjects: Subject[]
+  goals: Goal[]
+  actions: Action[]
 }
 
 const ALL_TYPES = ['CAMPAIGN', 'MEDIA KIT', 'MOCKUP', 'LANDING PAGE']
 
-export function LibraryPage({ campaigns, subjects }: Props) {
+export function LibraryPage({ campaigns, subjects, goals, actions }: Props) {
   const { copy, translateCampaignType } = useI18n()
   const [selSubject, setSelSubject] = useState<string | null>(null)
   const [selType, setSelType]       = useState<string | null>(null)
   const [detail, setDetail]         = useState<Campaign | null>(null)
+  const [briefingCampaign, setBriefingCampaign] = useState<Campaign | null>(null)
 
   const filtered = campaigns.filter(c => {
     if (selType && c.type !== selType) return false
@@ -292,7 +286,23 @@ export function LibraryPage({ campaigns, subjects }: Props) {
       </main>
 
       {/* Detail overlay */}
-      {detail && <DetailOverlay campaign={detail} onClose={() => setDetail(null)} />}
+      {detail && (
+        <DetailOverlay
+          campaign={detail}
+          onClose={() => setDetail(null)}
+          onStartBriefing={(c) => { setDetail(null); setBriefingCampaign(c) }}
+        />
+      )}
+
+      {/* Start-briefing pop-up */}
+      {briefingCampaign && (
+        <LibraryStartModal
+          campaign={briefingCampaign}
+          goals={goals}
+          actions={actions}
+          onClose={() => setBriefingCampaign(null)}
+        />
+      )}
     </div>
   )
 }
