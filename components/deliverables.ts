@@ -46,6 +46,7 @@ export type FieldSpec =
   | { kind: 'designVariation'; key: string; labelKey: string; options: BriefingOptionKey; showIf?: ShowIf }
   | { kind: 'placementGroup'; key: string; labelKey: string; showIf?: ShowIf }
   | { kind: 'socialOwn'; labelKey: string; showIf?: ShowIf }
+  | { kind: 'storefrontMockup'; key: string; labelKey: string; showIf?: ShowIf }
   | { kind: 'static'; key: string; labelKey: string; valueKey: string; showIf?: ShowIf }
   | { kind: 'upload'; labelKey: string; accept?: 'image' | 'pdf'; showIf?: ShowIf }
 
@@ -190,6 +191,7 @@ export const DELIVERABLES: Record<string, DeliverableDef> = {
     fields: [
       { kind: 'placementGroup', key: 'placements', labelKey: 'dimensions' },
       refUploadFrontal(),
+      { kind: 'storefrontMockup', key: 'mockup', labelKey: 'storefrontMockup' },
     ],
   },
   reboard: {

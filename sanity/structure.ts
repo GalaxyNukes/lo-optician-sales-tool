@@ -23,6 +23,7 @@ export const structure: StructureResolver = (S, context) =>
       orderableDocumentListDeskItem({ type: 'assetType',    title: '🧱  Deliverables (campaign packages)', S, context }),
       orderableDocumentListDeskItem({ type: 'theme',        title: '🎨  Themes',               S, context }),
       orderableDocumentListDeskItem({ type: 'design',       title: '🖼️  Designs',              S, context }),
+      orderableDocumentListDeskItem({ type: 'decal',        title: '🩷  Storefront Decals',     S, context }),
       orderableDocumentListDeskItem({ type: 'need',         title: '📦  Needs (legacy)',       S, context }),
       orderableDocumentListDeskItem({ type: 'subject',      title: '🏷️  Subject Filters',     S, context }),
       orderableDocumentListDeskItem({ type: 'visualStyle',  title: '🎨  Visual Styles',        S, context }),

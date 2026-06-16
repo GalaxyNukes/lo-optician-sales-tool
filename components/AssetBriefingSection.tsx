@@ -2,10 +2,11 @@
 
 import type { Dispatch, SetStateAction } from 'react'
 import { useI18n } from './i18n'
-import type { Theme, Subject } from './types'
+import type { Theme, Subject, Decal } from './types'
 import type { AssetBriefing, SharedBriefingFields } from './CampaignCatalog'
 import { AssetBriefingGroup } from './AssetBriefingGroup'
 import { UploadZone } from './assetFields'
+import { DecalsProvider } from './StorefrontMockup'
 import styles from './BriefingSection.module.css'
 
 const ACCENTS = ['#0D2340', '#1A6B4A', '#8B3A2A', '#2A4E8B', '#6B2A8B', '#8B6B2A', '#2A6B6B']
@@ -14,18 +15,20 @@ interface Props {
   assetBriefings: AssetBriefing[]
   sharedFields: SharedBriefingFields
   themes: Theme[]
+  decals: Decal[]
   selSubjects: Subject[]
   onUpdateBriefings: Dispatch<SetStateAction<AssetBriefing[]>>
   onUpdateShared: Dispatch<SetStateAction<SharedBriefingFields>>
 }
 
-export function AssetBriefingSection({ assetBriefings, sharedFields, themes, selSubjects, onUpdateBriefings, onUpdateShared }: Props) {
+export function AssetBriefingSection({ assetBriefings, sharedFields, themes, decals, selSubjects, onUpdateBriefings, onUpdateShared }: Props) {
   const { copy, briefingOptions } = useI18n()
   const setShared = (key: keyof SharedBriefingFields) => (value: string) => onUpdateShared(prev => ({ ...prev, [key]: value }))
   const totalInstances = assetBriefings.reduce((sum, b) => sum + b.instances.length, 0)
   const core = copy.briefing.core
 
   return (
+    <DecalsProvider decals={decals}>
     <div className={styles.wrap}>
       <div className={styles.header}>
         <div className={styles.headerIcon}>
@@ -118,5 +121,6 @@ export function AssetBriefingSection({ assetBriefings, sharedFields, themes, sel
         <UploadZone />
       </div>
     </div>
+    </DecalsProvider>
   )
 }

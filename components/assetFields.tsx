@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { useI18n } from './i18n'
 import type { BriefingValue, DimensionEntry, FieldSpec, FieldRow, ShowIf } from './deliverables'
 import { getDeliverable, flattenRows, formatPeriod, formatDimensions } from './deliverables'
+import { StorefrontMockupModal, MockupPreview, parseMockup } from './StorefrontMockup'
 import styles from './BriefingSection.module.css'
 
 // ── Type guards / accessors ───────────────────────────────────────────────────
@@ -330,6 +331,32 @@ function SocialOwn({ label, data, onChange }: { label: string; data: Record<stri
   )
 }
 
+function MockupField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const { copy } = useI18n()
+  const m = copy.briefing.mockup
+  const [open, setOpen] = useState(false)
+  const state = parseMockup(value)
+  return (
+    <Field label={label}>
+      {state.bg && (
+        <div className={styles.mockupThumbWrap}>
+          <MockupPreview state={state} className={styles.mockupThumb} />
+        </div>
+      )}
+      <button type="button" className={styles.mockupBtn} onClick={() => setOpen(true)}>
+        {state.bg ? m.edit : m.open}
+      </button>
+      {open && (
+        <StorefrontMockupModal
+          initial={state}
+          onSave={s => { onChange(JSON.stringify(s)); setOpen(false) }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </Field>
+  )
+}
+
 function DimensionList({ label, entries, onChange }: { label: string; entries: DimensionEntry[]; onChange: (entries: DimensionEntry[]) => void }) {
   const { copy } = useI18n()
   const rows = entries.length ? entries : [EMPTY_DIMENSION]
@@ -444,6 +471,8 @@ export function AssetFields({
         return <PlacementGroup key={index} label={label} entries={dims(spec.key)} onChange={v => onChange(spec.key, v)} />
       case 'socialOwn':
         return <SocialOwn key={index} label={label} data={data} onChange={onChange} />
+      case 'storefrontMockup':
+        return <MockupField key={index} label={label} value={str(spec.key)} onChange={v => onChange(spec.key, v)} />
       case 'static':
         return (
           <Field key={index} label={label}>
@@ -519,6 +548,9 @@ export function summarizeAssetFields(
       }
       if (str('storyOn') === 'yes') parts.push(`${copy.briefing.social.story} ×${str('storyCount') || '1'}`)
       if (parts.length) out.push({ label, value: parts.join(', ') })
+    } else if (spec.kind === 'storefrontMockup') {
+      const mk = parseMockup(str(spec.key))
+      if (mk.bg) out.push({ label, value: copy.briefing.mockup.placed(mk.decals.length) })
     } else if (spec.kind === 'static') {
       out.push({ label, value: (copy.briefing.values as Record<string, string>)[spec.valueKey] ?? spec.valueKey })
     } else if (spec.kind !== 'upload') {

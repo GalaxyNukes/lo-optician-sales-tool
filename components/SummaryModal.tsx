@@ -7,6 +7,7 @@ import { getLogoSvgMarkup } from './Logo'
 import { summarizeAssetFields } from './assetFields'
 import { getBlock, getDeliverable, designSides } from './deliverables'
 import type { BlockKey } from './deliverables'
+import { parseMockup, mockupDocHtml } from './StorefrontMockup'
 import type { AssetBriefing, AssetBriefingInstance, SharedBriefingFields } from './CampaignCatalog'
 import styles from './SummaryModal.module.css'
 
@@ -111,12 +112,15 @@ export function SummaryModal({
         const designHtml = design
           ? `<div class="design-row"><span class="design-tag">${escapeHtml(copy.summary.designLabel)}</span> ${escapeHtml(design.label)}${design.note ? ` — ${escapeHtml(design.note)}` : ''}</div>`
           : ''
+        const mk = typeof inst.data['mockup'] === 'string' ? parseMockup(inst.data['mockup'] as string) : null
+        const mockupHtml = mk?.bg ? mockupDocHtml(mk, escapeHtml) : ''
         return `<div class="block">
           <div class="block-head" style="background:${accent}">
             <span class="block-icon">${escapeHtml(getDeliverable(inst.deliverableKey)?.icon ?? '🧩')}</span> ${escapeHtml(deliverableLabel(inst.deliverableKey))}
           </div>
           <table class="block-table">${fieldsHtml}</table>
           ${designHtml}
+          ${mockupHtml}
         </div>`
       }).join('')
 
@@ -195,6 +199,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
 .doc-empty{font-size:.75rem;color:#888884;font-style:italic;padding:.6rem .9rem}
 .design-row{font-size:.78rem;color:#1A1612;padding:.55rem .9rem;border-top:1px solid #E0DDD6;background:#F9F8F6}
 .design-tag{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888884;margin-right:.4rem}
+.mockup{padding:.7rem .9rem;border-top:1px solid #E0DDD6;background:#F9F8F6}
+.mockup-canvas{position:relative;max-width:360px;border:1px solid #E0DDD6;border-radius:6px;overflow:hidden}
 .doc-footer{text-align:center;padding:1.5rem 0 .5rem;font-size:.7rem;color:#888884}
 .print-btn{position:fixed;bottom:1.5rem;right:1.5rem;background:#0D2340;color:#fff;border:none;padding:.75rem 1.5rem;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;box-shadow:0 4px 16px rgba(13,35,64,.25)}
 @media print{.print-btn{display:none}.wrap{margin:0;padding:0}}

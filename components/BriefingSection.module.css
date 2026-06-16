@@ -215,3 +215,9 @@
 .fileChip { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--text); background: var(--surface); border: 1px solid var(--bdr); border-radius: 100px; padding: .3rem .7rem; }
 .fileChipRm { border: none; background: none; color: var(--muted); cursor: pointer; font-size: .7rem; padding: 0; }
 .fileChipRm:hover { color: #C0392B; }
+
+/* storefront mockup field control */
+.mockupThumbWrap { border: 1px solid var(--bdr); border-radius: 9px; overflow: hidden; margin-bottom: .55rem; max-width: 320px; }
+.mockupThumb { display: block; }
+.mockupBtn { align-self: flex-start; padding: .65rem 1rem; border: 1.5px dashed var(--bdr); border-radius: 9px; background: #fff; color: var(--navy); font-size: .8rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s; }
+.mockupBtn:hover { border-color: var(--navy); background: rgba(13,35,64,.03); }

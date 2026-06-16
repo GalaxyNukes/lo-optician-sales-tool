@@ -46,6 +46,7 @@ export default async function Page() {
         actions={taxonomy?.actions ?? []}
         assetTypes={taxonomy?.assetTypes ?? []}
         themes={taxonomy?.themes ?? []}
+        decals={taxonomy?.decals ?? []}
         subjects={taxonomy?.subjects ?? []}
         isDraftMode={preview}
       />

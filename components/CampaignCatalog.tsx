@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import type { Goal, Action, Subject, Campaign, AssetType, Theme } from './types'
+import type { Goal, Action, Subject, Campaign, AssetType, Theme, Decal } from './types'
 import type { BlockKey, DesignPick } from './deliverables'
 import { BLOCKS, deliverablesForBlock, getDeliverable, designSides, LEGACY_KEY_MAP } from './deliverables'
 import { useI18n } from './i18n'
@@ -83,6 +83,7 @@ interface Props {
   actions: Action[]
   assetTypes: AssetType[]
   themes: Theme[]
+  decals: Decal[]
   subjects: Subject[]
   isDraftMode: boolean
 }
@@ -91,7 +92,7 @@ const EMPTY_SHARED: SharedBriefingFields = {
   title: '', deadline: '', liveDate: '', mainMessage: '', owner: '', audience: '', logoRequired: '', refUrl: '', bgInfo: '',
 }
 
-export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, isDraftMode }: Props) {
+export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, subjects, isDraftMode }: Props) {
   const { copy, translateScope } = useI18n()
   const notApplicableAction: Action = { _id: '__not_applicable__', label: copy.common.notApplicable, icon: 'c' }
   const step2Actions = [...actions, notApplicableAction]
@@ -345,6 +346,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
             assetBriefings={assetBriefings}
             sharedFields={sharedFields}
             themes={themes}
+            decals={decals}
             selSubjects={selSubjects}
             onUpdateBriefings={setAssetBriefings}
             onUpdateShared={setSharedFields}

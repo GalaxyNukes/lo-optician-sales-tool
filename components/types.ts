@@ -45,6 +45,15 @@ export interface Design {
   previewVideo?: string // resolved URL — landing scroll preview (mp4)
 }
 
+// Curated decal library for the storefront mockup tool (transparent PNGs).
+export type DecalCategory = 'logo' | 'quote' | 'badge' | 'special'
+export interface Decal {
+  _id: string
+  label: string
+  category: DecalCategory
+  image: string         // resolved URL (transparent PNG)
+}
+
 export interface Theme {
   _id: string
   title: string
