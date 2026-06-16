@@ -190,7 +190,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
       if (!def) continue
       const inst = newAssetInstance(def.key)
       if (sa.designId) {
-        const slot = def.design === 'multi' ? sa.designId : (designSides(def, {}) ? 'front' : 'main')
+        const slot = designSides(def, {}) ? 'front' : 'main'
         const themeId = themes.find(t => t.designs?.some(d => d._id === sa.designId))?._id ?? null
         inst.designs = [{ slot, themeId, designId: sa.designId, designTitle: sa.designTitle ?? '' }]
       }

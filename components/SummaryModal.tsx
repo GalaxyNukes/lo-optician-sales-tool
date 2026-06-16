@@ -69,9 +69,9 @@ export function SummaryModal({
     const sides = def ? designSides(def, inst.data) : null
     if (sides) {
       const parts = sides.map(slot => {
-        const p = inst.designs.find(d => d.slot === slot)
+        const picks = inst.designs.filter(d => d.slot === slot)
         const slotName = slot === 'front' ? copy.briefing.designSideFront : copy.briefing.designSideBack
-        return p ? `${slotName}: ${p.designTitle}` : null
+        return picks.length ? `${slotName}: ${picks.map(p => p.designTitle).join(', ')}` : null
       }).filter(Boolean) as string[]
       return parts.length ? { label: parts.join(' · ') } : null
     }

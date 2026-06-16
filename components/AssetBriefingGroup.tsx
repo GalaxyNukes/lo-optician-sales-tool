@@ -137,7 +137,6 @@ function InstanceCard({
   const hasDesignTab = def ? def.design !== 'none' : false
   const [tab, setTab] = useState<'fields' | 'design'>('fields')
 
-  const mode = def?.design === 'multi' ? 'multi' : 'single'
   const sides = def ? designSides(def, inst.data) : null
 
   return (
@@ -163,7 +162,6 @@ function InstanceCard({
         ) : (
           <ThemeDesignPicker
             deliverableKey={inst.deliverableKey}
-            mode={mode}
             sides={sides}
             themes={themes}
             selSubjects={selSubjects}

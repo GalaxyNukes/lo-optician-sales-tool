@@ -24,7 +24,6 @@ function frameFor(deliverableKey: string): Frame {
 
 interface Props {
   deliverableKey: string
-  mode: 'single' | 'multi'
   sides: string[] | null          // ['front','back'] when recto/verso = double
   themes: Theme[]
   selSubjects: Subject[]
@@ -38,7 +37,6 @@ interface Props {
 
 export function ThemeDesignPicker({
   deliverableKey,
-  mode,
   sides,
   themes,
   selSubjects,
@@ -56,53 +54,42 @@ export function ThemeDesignPicker({
     ? themes.filter(theme => theme.subjects?.some(s => selSubjects.some(ss => ss._id === s._id)))
     : themes
 
-  const firstPickThemeId = designs[0]?.themeId ?? null
-  const initialTheme = (firstPickThemeId ?? filtered[0]?._id) ?? null
-  const [activeId, setActiveId] = useState<string | null>(initialTheme)
+  // Themes are active by default; toggling a chip switches it off/on. Multiple
+  // themes can be active at once — their designs are shown together below.
+  const [offIds, setOffIds] = useState<Set<string>>(new Set())
   const [activeSlot, setActiveSlot] = useState<string>(sides ? sides[0] : 'main')
-  const activeTheme = filtered.find(theme => theme._id === activeId) ?? filtered[0] ?? null
+  const toggleTheme = (id: string) =>
+    setOffIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
+
+  const activeThemes = filtered.filter(t => !offIds.has(t._id))
+  const showThemeLabels = activeThemes.length > 1
+
+  // The bucket designs land in: a side (front/back) when recto/verso, else "main".
+  const currentSlot = sides ? activeSlot : 'main'
+  const slotPicks = (slot: string) => designs.filter(d => d.slot === slot)
 
   const slotLabel = (slot: string) =>
     slot === 'front' ? copy.briefing.designSideFront : slot === 'back' ? copy.briefing.designSideBack : ''
 
-  // Is this design currently selected (in the relevant context)?
-  const isSelected = (designId: string) => {
-    if (mode === 'multi') return designs.some(d => d.designId === designId)
-    if (sides) return designs.some(d => d.slot === activeSlot && d.designId === designId)
-    return designs.some(d => d.designId === designId)
-  }
+  const isSelected = (designId: string) =>
+    !isCustom && designs.some(d => d.slot === currentSlot && d.designId === designId)
 
-  const pick = (themeId: string, designId: string, title: string) => {
-    if (mode === 'multi') {
-      const present = designs.some(d => d.designId === designId)
-      onSetDesigns(present
-        ? designs.filter(d => d.designId !== designId)
-        : [...designs, { slot: designId, themeId, designId, designTitle: title }])
-      return
-    }
-    if (sides) {
-      const existing = designs.find(d => d.slot === activeSlot)
-      const next = existing && existing.designId === designId
-        ? designs.filter(d => d.slot !== activeSlot)                          // toggle off
-        : [...designs.filter(d => d.slot !== activeSlot), { slot: activeSlot, themeId, designId, designTitle: title }]
-      onSetDesigns(next)
-      return
-    }
-    // single
-    const present = designs.some(d => d.designId === designId)
-    onSetDesigns(present ? [] : [{ slot: 'main', themeId, designId, designTitle: title }])
+  const toggle = (themeId: string, designId: string, title: string) => {
+    const present = designs.some(d => d.slot === currentSlot && d.designId === designId)
+    onSetDesigns(present
+      ? designs.filter(d => !(d.slot === currentSlot && d.designId === designId))
+      : [...designs, { slot: currentSlot, themeId, designId, designTitle: title }])
   }
-
-  const slotPick = (slot: string) => designs.find(d => d.slot === slot)
 
   return (
     <div className={styles.designWrap}>
-      {mode === 'multi' && <div className={styles.designHint}>{copy.briefing.designMultiHint}</div>}
+      <div className={styles.designHint}>{copy.briefing.designMultiHint}</div>
 
       {sides && (
         <div className={styles.slotRow}>
           {sides.map(slot => {
-            const p = slotPick(slot)
+            const picks = slotPicks(slot)
+            const summary = picks.length ? picks.map(p => p.designTitle).join(', ') : '—'
             return (
               <button
                 key={slot}
@@ -110,8 +97,8 @@ export function ThemeDesignPicker({
                 className={`${styles.slotTab} ${activeSlot === slot ? styles.slotTabOn : ''}`}
                 onClick={() => setActiveSlot(slot)}
               >
-                <span className={styles.slotName}>{slotLabel(slot)}</span>
-                <span className={styles.slotPick}>{p ? p.designTitle : '—'}</span>
+                <span className={styles.slotName}>{slotLabel(slot)}{picks.length ? ` · ${picks.length}` : ''}</span>
+                <span className={styles.slotPick}>{summary}</span>
               </button>
             )
           })}
@@ -128,45 +115,54 @@ export function ThemeDesignPicker({
               <button
                 key={theme._id}
                 type="button"
-                className={`${styles.themeChip} ${activeTheme?._id === theme._id ? styles.themeChipOn : ''}`}
-                onClick={() => setActiveId(theme._id)}
+                className={`${styles.themeChip} ${!offIds.has(theme._id) ? styles.themeChipOn : ''}`}
+                onClick={() => toggleTheme(theme._id)}
               >
                 {theme.title}
               </button>
             ))}
           </div>
 
-          {activeTheme && (activeTheme.designs?.length ? (
-            <div className={styles.designGrid}>
-              {activeTheme.designs.map(design => {
-                const on = !isCustom && isSelected(design._id)
-                return (
-                  <div
-                    key={design._id}
-                    className={`${styles.designCard} ${on ? styles.designCardOn : ''}`}
-                    onClick={() => pick(activeTheme._id, design._id, design.title)}
-                  >
-                    {frame === 'social' && (
-                      <div className={styles.frameSocialHead}><span className={styles.frameAvatar} /><span className={styles.frameLines} /></div>
-                    )}
-                    {frame === 'phone' && (
-                      <div className={styles.framePhoneHead}><span className={styles.framePhoneNotch} /></div>
-                    )}
-                    <div className={styles.designThumb}>
-                      <Image src={design.image || FALLBACK_IMAGE_DATA_URI} alt={design.title} fill sizes="200px" style={{ objectFit: 'cover' }} />
-                      {on && <span className={styles.designCheck}>{CHECK}</span>}
-                    </div>
-                    {frame === 'social' && (
-                      <div className={styles.frameSocialFoot}><span className={styles.frameLineShort} /></div>
-                    )}
-                    <div className={styles.designTitle}>{design.title}</div>
-                  </div>
-                )
-              })}
-            </div>
+          {activeThemes.length === 0 ? (
+            <div className={styles.emptyDesigns}>{copy.briefing.designActivateTheme}</div>
           ) : (
-            <div className={styles.emptyDesigns}>{copy.briefing.designNoDesigns}</div>
-          ))}
+            activeThemes.map(theme => (
+              <div key={theme._id} className={styles.themeGroup}>
+                {showThemeLabels && <div className={styles.themeGroupLabel}>{theme.title}</div>}
+                {theme.designs?.length ? (
+                  <div className={styles.designGrid}>
+                    {theme.designs.map(design => {
+                      const on = isSelected(design._id)
+                      return (
+                        <div
+                          key={`${theme._id}-${design._id}`}
+                          className={`${styles.designCard} ${on ? styles.designCardOn : ''}`}
+                          onClick={() => toggle(theme._id, design._id, design.title)}
+                        >
+                          {frame === 'social' && (
+                            <div className={styles.frameSocialHead}><span className={styles.frameAvatar} /><span className={styles.frameLines} /></div>
+                          )}
+                          {frame === 'phone' && (
+                            <div className={styles.framePhoneHead}><span className={styles.framePhoneNotch} /></div>
+                          )}
+                          <div className={styles.designThumb}>
+                            <Image src={design.image || FALLBACK_IMAGE_DATA_URI} alt={design.title} fill sizes="200px" style={{ objectFit: 'cover' }} />
+                            {on && <span className={styles.designCheck}>{CHECK}</span>}
+                          </div>
+                          {frame === 'social' && (
+                            <div className={styles.frameSocialFoot}><span className={styles.frameLineShort} /></div>
+                          )}
+                          <div className={styles.designTitle}>{design.title}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className={styles.emptyDesigns}>{copy.briefing.designNoDesigns}</div>
+                )}
+              </div>
+            ))
+          )}
         </>
       )}
 

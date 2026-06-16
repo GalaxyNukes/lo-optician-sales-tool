@@ -94,6 +94,10 @@
 .slotName { font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .slotPick { font-size: .8rem; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* multi-active themes — designs grouped per active theme */
+.themeGroup { display: flex; flex-direction: column; gap: .5rem; }
+.themeGroupLabel { font-size: .68rem; font-weight: 600; letter-spacing: .04em; color: var(--navy); }
+
 @media (max-width: 600px) {
   .deliverableGrid { grid-template-columns: repeat(2, 1fr); }
 }
