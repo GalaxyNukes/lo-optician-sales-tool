@@ -603,14 +603,6 @@ const countryLabels = {
   DE: { nl: 'Duitsland', fr: 'Allemagne', en: 'Germany' },
 } as const
 
-const campaignTypeLabels: Record<string, Record<Lang, string>> = {
-  CAMPAIGN: { nl: 'Campagne', fr: 'Campagne', en: 'Campaign' },
-  'MEDIA KIT': { nl: 'Mediakit', fr: 'Kit média', en: 'Media kit' },
-  MOCKUP: { nl: 'Mock-up', fr: 'Mock-up', en: 'Mockup' },
-  'LANDING PAGE': { nl: 'Landingspagina', fr: "Page d'atterrissage", en: 'Landing page' },
-  POS: { nl: 'POS', fr: 'POS', en: 'POS' },
-} as const
-
 const blockMetaLabels: Record<string, Record<Lang, { title: string; desc: string }>> = {
   'af-sticker': {
     nl: { title: 'Partnerbranding', desc: 'Etalageformaten, deurmaten en winkelbeelden' },
@@ -733,7 +725,6 @@ export function useI18n() {
     copy: translations[lang],
     formatDateLocale: lang === 'fr' ? 'fr-BE' : lang === 'en' ? 'en-BE' : 'nl-BE',
     translateCountry: (code: string) => countryLabels[code as keyof typeof countryLabels]?.[lang] || code,
-    translateCampaignType: (type: string) => campaignTypeLabels[type]?.[lang] || type,
     translateBlockMeta: (typeId: string) => {
       const base = BLOCK_META[typeId]
       const localized = blockMetaLabels[typeId]?.[lang]

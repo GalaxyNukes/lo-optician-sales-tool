@@ -36,6 +36,13 @@ export const assetTypesQuery = groq`
   }
 `
 
+// Library filter categories (campaign "Asset type"). Editable in Studio.
+export const campaignTypesQuery = groq`
+  *[_type == "campaignType" && active != false] | order(orderRank asc) {
+    _id, label, color
+  }
+`
+
 // Themes group designs — now references to design documents.
 export const themesQuery = groq`
   *[_type == "theme" && active != false] | order(orderRank asc) {
@@ -61,7 +68,7 @@ export const campaignsQuery = groq`
   *[_type == "campaign" && (status == "published" || status == null)] | order(_createdAt desc) {
     _id,
     title,
-    type,
+    "type": type->{ _id, label, color },
     description,
     formats,
     status,
@@ -84,7 +91,7 @@ export const campaignsPreviewQuery = groq`
   *[_type == "campaign"] | order(_createdAt desc) {
     _id,
     title,
-    type,
+    "type": type->{ _id, label, color },
     description,
     formats,
     status,
@@ -107,7 +114,7 @@ export const campaignByIdQuery = groq`
   *[_type == "campaign" && _id == $id][0] {
     _id,
     title,
-    type,
+    "type": type->{ _id, label, color },
     description,
     formats,
     status,
@@ -127,6 +134,7 @@ export const campaignByIdQuery = groq`
 
 // All taxonomy in one query — efficient single fetch on page load
 export const allTaxonomyQuery = groq`{
+  "campaignTypes": *[_type == "campaignType" && active != false] | order(orderRank asc) { _id, label, color },
   "goals":     *[_type == "goal"        && active != false] | order(orderRank asc) { _id, label, labelNL, icon },
   "actions":   *[_type == "action"      && active != false] | order(orderRank asc) { _id, label, icon, isCustom },
   "needs":     *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },

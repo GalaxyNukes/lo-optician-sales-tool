@@ -14,7 +14,7 @@ export default async function Library() {
       client.fetch(campaignsPreviewQuery, {}, { cache: 'no-store' as const }),
       client.fetch(allTaxonomyQuery, {}, { cache: 'no-store' as const }),
     ])
-    return <LibraryPage campaigns={campaigns ?? []} subjects={taxonomy?.subjects ?? []} goals={taxonomy?.goals ?? []} actions={taxonomy?.actions ?? []} />
+    return <LibraryPage campaigns={campaigns ?? []} subjects={taxonomy?.subjects ?? []} goals={taxonomy?.goals ?? []} actions={taxonomy?.actions ?? []} campaignTypes={taxonomy?.campaignTypes ?? []} />
   } catch {
     return <div style={{ padding: '4rem', color: '#888', fontFamily: 'sans-serif' }}>Failed to load library.</div>
   }

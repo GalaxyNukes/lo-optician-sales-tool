@@ -136,8 +136,8 @@
 /* ── Impact dots ── */
 .impactCell { text-align: center; }
 .dots { display: flex; gap: 3px; justify-content: center; align-items: center; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: #E8E5DE; display: inline-block; }
-.dotOn { background: #1A9E7E; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #D7E4F5; display: inline-block; }
+.dotOn { background: #4F9CE0; }
 
 /* ── Empty row ── */
 .emptyRow { text-align: center; color: #888884; font-size: 10px; padding: 2rem !important; }
@@ -203,6 +203,54 @@
 }
 .colLooptijd { width: 100px; }
 .runningTime { font-size: 9px; color: #555; line-height: 1.35; display: inline-block; }
+
+/* ── Compare view ── */
+.cmpControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 22px 6px;
+  background: #fff;
+}
+.cmpPicker { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.cmpPickerLabel { font-size: 10px; font-weight: 700; color: #888884; margin-right: 2px; }
+.cmpChip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 100px;
+  border: 1px dashed #C8C5BE;
+  background: transparent;
+  color: #888884;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.cmpChip:hover { color: #0D2340; border-color: #888884; }
+.cmpChipOn { background: #0D2340; color: #fff; border: 1px solid #0D2340; }
+.cmpChipOn:hover { color: #fff; }
+.cmpToggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #555;
+  cursor: pointer;
+  border: 1px solid #D4D0C8;
+  padding: 6px 12px;
+  border-radius: 100px;
+  user-select: none;
+}
+.cmpToggle input { cursor: pointer; accent-color: #0D2340; }
+.cmpState { font-size: 9px; color: #888884; padding: 0 22px 8px; background: #fff; }
+.colCompare { width: auto; min-width: 110px; }
+.cmpCell { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.cmpYes { color: #1A9E7E; font-weight: 700; font-size: 11px; }
+.cmpNo { color: #B0ADA6; font-size: 9px; white-space: nowrap; }
+.cmpEmpty { padding: 2rem 22px; text-align: center; color: #888884; font-size: 10px; background: #fff; }
+.cmpEmpty a { color: #0D2340; text-decoration: underline; }
 
 /* ── Print mode ── */
 @media print {

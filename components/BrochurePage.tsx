@@ -129,7 +129,7 @@ function GroupedIndex({ blocks }: { blocks: PartnerBlock[] }) {
       <div className={styles.container}>
         <div className={styles.indexGrid}>
           {renderGroup('Wat we altijd voor je doen', always)}
-          {renderGroup('Wat je kan activeren', optional)}
+          {renderGroup('Wat je kan activeren op aanvraag', optional)}
         </div>
       </div>
     </section>
@@ -185,7 +185,28 @@ function BlockSection({ block, index }: { block: PartnerBlock; index: number }) 
   )
 }
 
+// Body section divider — strong navy band marking always-on vs on-request.
+function SectionHeader({ variant, kicker, title, subtitle }: { variant: 'always' | 'optional'; kicker: string; title: string; subtitle: string }) {
+  const isOpt = variant === 'optional'
+  return (
+    <section className={`${styles.bodySectionHeader} ${isOpt ? styles.bodySectionHeaderOpt : ''}`}>
+      <div className={styles.container}>
+        <span className={`${styles.bodySectionKicker} ${isOpt ? styles.bodySectionKickerOpt : ''}`}>{kicker}</span>
+        <h2 className={styles.bodySectionTitle}>{title}</h2>
+        <p className={styles.bodySectionSub}>{subtitle}</p>
+      </div>
+    </section>
+  )
+}
+
 export function BrochurePage({ blocks }: Props) {
+  // Split into the two body sections (mirrors GroupedIndex). filter() is a stable partition,
+  // so the Studio orderRank is preserved within each group; `ordered` drives the hero index
+  // and block numbering so the numbers stay consistent with the grouped body below.
+  const alwaysBlocks = blocks.filter(b => ALWAYS_TIMINGS.has(b.timing || ''))
+  const optionalBlocks = blocks.filter(b => !ALWAYS_TIMINGS.has(b.timing || ''))
+  const ordered = [...alwaysBlocks, ...optionalBlocks]
+
   return (
     <div className={styles.root}>
 
@@ -221,7 +242,7 @@ export function BrochurePage({ blocks }: Props) {
 
             {blocks.length > 0 && (
               <nav className={styles.heroNav} aria-label="Blokkenindex">
-                {blocks.map((b, i) => (
+                {ordered.map((b, i) => (
                   <a key={b._id} href={`#block-${b._id}`} className={styles.heroNavItem}>
                     <span className={styles.heroNavDot} style={{ background: b.badgeColor || '#0D2340' }} />
                     <span className={styles.heroNavNum}>{String(i + 1).padStart(2, '0')}</span>
@@ -240,9 +261,34 @@ export function BrochurePage({ blocks }: Props) {
       <GroupedIndex blocks={blocks} />
 
       {blocks.length > 0 ? (
-        blocks.map((block, index) => (
-          <BlockSection key={block._id} block={block} index={index} />
-        ))
+        <>
+          {alwaysBlocks.length > 0 && (
+            <>
+              <SectionHeader
+                variant="always"
+                kicker="Inbegrepen — altijd actief"
+                title="Wat we altijd voor je doen"
+                subtitle="Deze activaties zetten we automatisch in voor elke partner. Je hoeft er niets voor aan te vragen."
+              />
+              {alwaysBlocks.map((block, i) => (
+                <BlockSection key={block._id} block={block} index={i} />
+              ))}
+            </>
+          )}
+          {optionalBlocks.length > 0 && (
+            <>
+              <SectionHeader
+                variant="optional"
+                kicker="Op aanvraag — jij beslist"
+                title="Wat je kan activeren op aanvraag"
+                subtitle="Extra activaties die je samen met je account manager inschakelt wanneer ze passen bij jouw winkel en doelgroep."
+              />
+              {optionalBlocks.map((block, i) => (
+                <BlockSection key={block._id} block={block} index={alwaysBlocks.length + i} />
+              ))}
+            </>
+          )}
+        </>
       ) : (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>

@@ -24,18 +24,10 @@ export const campaign = defineType({
     defineField({
       name: 'type',
       title: 'Asset type',
-      type: 'string',
+      type: 'reference',
+      to: [{ type: 'campaignType' }],
       group: 'content',
-      options: {
-        list: [
-          { title: 'Campaign', value: 'CAMPAIGN' },
-          { title: 'Media Kit', value: 'MEDIA KIT' },
-          { title: 'Mockup / AI', value: 'MOCKUP' },
-          { title: 'Landing Page', value: 'LANDING PAGE' },
-          { title: 'POS Materials', value: 'POS' },
-          { title: 'Media Kit', value: 'MEDIA KIT' },
-        ],
-      },
+      description: 'Library filter category. Manage the list under "Asset Types (Library filters)".',
       validation: (R) => R.required(),
     }),
     defineField({

@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
-  const { copy, translateCampaignType } = useI18n()
+  const { copy } = useI18n()
 
   if (campaigns.length === 0) {
     return <div className={styles.empty}>{copy.filters.noAssets}</div>
@@ -49,7 +49,7 @@ export function CampaignGrid({ campaigns, selected, onToggle, onOpen }: Props) {
                   className={styles.img}
                 />
                 <div className={styles.badges}>
-                  <span className={styles.typeBadge}>{translateCampaignType(c.type)}</span>
+                  {c.type && <span className={styles.typeBadge}>{c.type.label}</span>}
                   <button
                     className={`${styles.check} ${isSel ? styles.ticked : ''}`}
                     title={copy.detail.add}

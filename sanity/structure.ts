@@ -13,6 +13,8 @@ export const structure: StructureResolver = (S, context) =>
             .defaultOrdering([{ field: '_createdAt', direction: 'desc' }])
         ),
 
+      orderableDocumentListDeskItem({ type: 'campaignType', title: '🏷️  Asset Types (Library filters)', S, context }),
+
       S.divider(),
 
       // Drag-and-drop ordering for all taxonomy types

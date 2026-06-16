@@ -61,10 +61,16 @@ export interface CampaignGoal {
   label: string
 }
 
+export interface CampaignType {
+  _id: string
+  label: string
+  color?: string
+}
+
 export interface Campaign {
   _id: string
   title: string
-  type: string
+  type: CampaignType | null
   description: string
   formats: string[]
   status: 'published' | 'draft' | 'internal'

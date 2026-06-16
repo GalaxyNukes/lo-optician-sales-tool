@@ -4,25 +4,17 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Nav } from './Nav'
 import { useI18n } from './i18n'
-import type { Campaign, Subject, Goal, Action } from './types'
+import type { Campaign, Subject, Goal, Action, CampaignType } from './types'
 import { FALLBACK_IMAGE_DATA_URI } from './imageFallback'
 import { LibraryStartModal } from './LibraryStartModal'
 import styles from './LibraryPage.module.css'
 
-const TYPE_COLORS: Record<string, string> = {
-  'CAMPAIGN':     '#1A9E7E',
-  'MEDIA KIT':    '#2A4E8B',
-  'MOCKUP':       '#8B3A2A',
-  'LANDING PAGE': '#6B2A8B',
-  'POS':          '#8B6B2A',
-}
-
 // ── Horizontal detail overlay ─────────────────────────────────────────────────
 function DetailOverlay({ campaign: c, onClose, onStartBriefing }: { campaign: Campaign; onClose: () => void; onStartBriefing: (campaign: Campaign) => void }) {
-  const { copy, translateCampaignType } = useI18n()
+  const { copy } = useI18n()
   const [activeImg, setActiveImg] = useState(0)
   const imgs = c.mockups?.filter(Boolean).length ? c.mockups : [c.thumbnail].filter(Boolean)
-  const typeColor = TYPE_COLORS[c.type] || '#0D2340'
+  const typeColor = c.type?.color || '#0D2340'
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -45,10 +37,10 @@ function DetailOverlay({ campaign: c, onClose, onStartBriefing }: { campaign: Ca
         <div className={styles.overlayLeft}>
           <div className={styles.overlayMainImg}>
             {imgs[activeImg] && (
-              <Image src={imgs[activeImg]} alt={c.title} fill sizes="50vw" className={`${styles.overlayImg} ${c.type === 'MEDIA KIT' ? styles.overlayImgContain : ''}`} priority />
+              <Image src={imgs[activeImg]} alt={c.title} fill sizes="50vw" className={styles.overlayImg} priority />
             )}
             {/* Type badge */}
-            <span className={styles.overlayTypeBadge} style={{ background: typeColor }}>{translateCampaignType(c.type)}</span>
+            {c.type && <span className={styles.overlayTypeBadge} style={{ background: typeColor }}>{c.type.label}</span>}
             {/* Gallery arrows */}
             {imgs.length > 1 && (
               <>
@@ -131,8 +123,7 @@ function CampaignCard({ campaign: c, size, index, onClick }: {
   index: number
   onClick: () => void
 }) {
-  const { translateCampaignType } = useI18n()
-  const typeColor = TYPE_COLORS[c.type] || '#0D2340'
+  const typeColor = c.type?.color || '#0D2340'
 
   return (
     <article
@@ -155,7 +146,7 @@ function CampaignCard({ campaign: c, size, index, onClick }: {
       {/* Content */}
       <div className={styles.cardBody}>
         <div className={styles.cardTop}>
-          <span className={styles.cardType} style={{ color: typeColor }}>{translateCampaignType(c.type)}</span>
+          {c.type && <span className={styles.cardType} style={{ color: typeColor }}>{c.type.label}</span>}
           {c.visualStyle && <span className={styles.cardStyle}>{c.visualStyle.label}</span>}
         </div>
         <div className={styles.cardBottom}>
@@ -200,24 +191,23 @@ interface Props {
   subjects: Subject[]
   goals: Goal[]
   actions: Action[]
+  campaignTypes: CampaignType[]
 }
 
-const ALL_TYPES = ['CAMPAIGN', 'MEDIA KIT', 'MOCKUP', 'LANDING PAGE']
-
-export function LibraryPage({ campaigns, subjects, goals, actions }: Props) {
-  const { copy, translateCampaignType } = useI18n()
+export function LibraryPage({ campaigns, subjects, goals, actions, campaignTypes }: Props) {
+  const { copy } = useI18n()
   const [selSubject, setSelSubject] = useState<string | null>(null)
   const [selType, setSelType]       = useState<string | null>(null)
   const [detail, setDetail]         = useState<Campaign | null>(null)
   const [briefingCampaign, setBriefingCampaign] = useState<Campaign | null>(null)
 
   const filtered = campaigns.filter(c => {
-    if (selType && c.type !== selType) return false
+    if (selType && c.type?._id !== selType) return false
     if (selSubject && !c.subjects?.some(s => s.label === selSubject)) return false
     return true
   })
 
-  const presentTypes = ALL_TYPES.filter(t => campaigns.some(c => c.type === t))
+  const presentTypes = campaignTypes.filter(t => campaigns.some(c => c.type?._id === t._id))
 
   return (
     <div className={styles.page}>
@@ -236,12 +226,12 @@ export function LibraryPage({ campaigns, subjects, goals, actions }: Props) {
             </button>
             {presentTypes.map(t => (
               <button
-                key={t}
-                className={`${styles.chip} ${selType === t ? styles.chipOn : ''}`}
-                onClick={() => setSelType(t === selType ? null : t)}
+                key={t._id}
+                className={`${styles.chip} ${selType === t._id ? styles.chipOn : ''}`}
+                onClick={() => setSelType(t._id === selType ? null : t._id)}
               >
-                <span className={styles.chipDot} style={{ background: TYPE_COLORS[t] || '#888' }} />
-                {translateCampaignType(t)}
+                <span className={styles.chipDot} style={{ background: t.color || '#888' }} />
+                {t.label}
               </button>
             ))}
           </div>

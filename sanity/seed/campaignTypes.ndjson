@@ -1,0 +1,5 @@
+{"_id":"campaignType.campaign","_type":"campaignType","orderRank":"0|100000:","label":"Campaign","color":"#1A9E7E","active":true}
+{"_id":"campaignType.pos","_type":"campaignType","orderRank":"0|200000:","label":"General POS materials","color":"#8B6B2A","active":true}
+{"_id":"campaignType.artist-impressions","_type":"campaignType","orderRank":"0|300000:","label":"Artist impressions","color":"#8B3A2A","active":true}
+{"_id":"campaignType.onboarding","_type":"campaignType","orderRank":"0|400000:","label":"Onboarding campaign","color":"#2A4E8B","active":true}
+{"_id":"campaignType.digital-advertising","_type":"campaignType","orderRank":"0|500000:","label":"Digital advertising","color":"#6B2A8B","active":true}
