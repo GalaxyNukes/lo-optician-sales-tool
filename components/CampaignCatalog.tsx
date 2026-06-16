@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { Goal, Action, Subject, Campaign, AssetType, Theme } from './types'
+import type { BlockKey, DesignPick } from './deliverables'
+import { BLOCKS, deliverablesForBlock, getDeliverable, designSides, LEGACY_KEY_MAP } from './deliverables'
 import { useI18n } from './i18n'
 import { Nav } from './Nav'
 import { ClientStep } from './ClientStep'
@@ -11,50 +13,35 @@ import { AssetBriefingSection } from './AssetBriefingSection'
 import { BottomBar } from './BottomBar'
 import { SummaryModal } from './SummaryModal'
 
-// ── Shared types for lifted briefing state ────────────────────────────────────
-export interface DimensionEntry {
-  width: string
-  height: string
-}
-
-export type BriefingValue = string | string[] | DimensionEntry[]
-
-export interface BriefingInstance {
-  id: string
-  typeId: string
-  data: Record<string, BriefingValue>
-}
-
-export interface CampaignBriefing {
-  campaignId: string
-  instances: BriefingInstance[]
-}
+// Re-export the shared value shapes (kept here historically; defined in deliverables).
+export type { DimensionEntry, BriefingValue, DesignPick } from './deliverables'
+import type { BriefingValue } from './deliverables'
 
 export interface SharedBriefingFields {
+  title: string
   deadline: string
   liveDate: string
-  desc4: string
-  bgInfo: string
+  mainMessage: string
+  owner: string
+  audience: string
+  logoRequired: string   // 'yes' | 'no' | ''
   refUrl: string
+  bgInfo: string
 }
 
-// ── Per-asset briefing state (Step 3 redesign) ───────────────────────────────
+// ── Per-asset briefing state (Step-3 redesign) ────────────────────────────────
+// One group per asset BLOCK; each block holds a mix of deliverable instances.
 export interface AssetBriefingInstance {
   id: string
+  deliverableKey: string
   data: Record<string, BriefingValue>
-  selectedThemeId: string | null
-  selectedDesignId: string | null
-  selectedDesignTitle: string | null
+  designs: DesignPick[]
+  designIsCustom: boolean
   customDesignNote: string
 }
 
 export interface AssetBriefing {
-  assetTypeId: string
-  assetKey: string             // selects the field set
-  blockType: string            // accent / grouping
-  label: string
-  icon: string                 // emoji from the asset type
-  heroImage?: string           // optional inspiration banner (resolved URL)
+  blockKey: BlockKey
   accentColor: string
   instances: AssetBriefingInstance[]
 }
@@ -62,20 +49,18 @@ export interface AssetBriefing {
 let _counter = 0
 export const uid = () => `i${_counter++}`
 
-export function newAssetInstance(): AssetBriefingInstance {
+export function newAssetInstance(deliverableKey: string): AssetBriefingInstance {
   return {
     id: uid(),
+    deliverableKey,
     data: {},
-    selectedThemeId: null,
-    selectedDesignId: null,
-    selectedDesignTitle: null,
+    designs: [],
+    designIsCustom: false,
     customDesignNote: '',
   }
 }
 
 // ── Library "start briefing" handoff ───────────────────────────────────────────
-// A campaign hands off a list of (asset type + optional design) pairs, plus the
-// optician / goal / action context gathered in the Library pop-up.
 export interface SeedAsset {
   assetTypeId: string
   designId?: string | null
@@ -90,18 +75,6 @@ export interface CampaignSeed {
   assets: SeedAsset[]
 }
 
-export function getPrefillForCampaign(typeId: string, campaign: { prefill?: Campaign['prefill'] }): Record<string, BriefingValue> {
-  const pf = campaign.prefill
-  if (!pf) return {}
-  const result: Record<string, BriefingValue> = {}
-  if (typeId === 'af-print')  { if (pf.printPaper) result.paper = pf.printPaper; if (pf.printQty) result.qty = String(pf.printQty) }
-  if (typeId === 'af-social'  && pf.socialPlatforms?.length) result.platforms = pf.socialPlatforms
-  if (typeId === 'af-banner'  && pf.bannerMaterial) result.material = pf.bannerMaterial
-  if (typeId === 'af-video')  { if (pf.videoType) result.vtype = pf.videoType; if (pf.videoDuration) result.vlen = pf.videoDuration }
-  if (typeId === 'af-sticker' && pf.stickerNotes) result.notes = pf.stickerNotes
-  return result
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 const ACCENTS = ['#0D2340', '#1A6B4A', '#8B3A2A', '#2A4E8B', '#6B2A8B', '#8B6B2A', '#2A6B6B']
 
@@ -112,6 +85,10 @@ interface Props {
   themes: Theme[]
   subjects: Subject[]
   isDraftMode: boolean
+}
+
+const EMPTY_SHARED: SharedBriefingFields = {
+  title: '', deadline: '', liveDate: '', mainMessage: '', owner: '', audience: '', logoRequired: '', refUrl: '', bgInfo: '',
 }
 
 export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, isDraftMode }: Props) {
@@ -131,14 +108,11 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
   const [customAction, setCustomAction] = useState('')
   const [actionValidUntil, setActionValidUntil] = useState('')
   const [actionScope, setActionScope] = useState<'store' | 'online' | 'na' | ''>('')
-  const [selAssetTypes, setSelAssetTypes] = useState<AssetType[]>([])
   const [selSubjects, setSelSubjects] = useState<Subject[]>([])
 
   // ── Lifted briefing state ─────────────────────────────────────────────────
   const [assetBriefings, setAssetBriefings] = useState<AssetBriefing[]>([])
-  const [sharedFields, setSharedFields] = useState<SharedBriefingFields>({
-    deadline: '', liveDate: '', desc4: '', bgInfo: '', refUrl: '',
-  })
+  const [sharedFields, setSharedFields] = useState<SharedBriefingFields>(EMPTY_SHARED)
 
   // UI state
   const [summaryOpen, setSummaryOpen] = useState(false)
@@ -156,20 +130,18 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
         : Boolean(actionValidUntil && actionScope)
     )
   )
-  const showBriefing = isActionReady && selAssetTypes.length > 0
+  const showBriefing = isActionReady && assetBriefings.length > 0
   const totalInstances = assetBriefings.reduce((sum, b) => sum + b.instances.length, 0)
+  const selectedBlockKeys = assetBriefings.map(b => b.blockKey)
 
   useEffect(() => {
     if (isActionReady) return
-
-    setSelAssetTypes([])
     setSelSubjects([])
     setAssetBriefings([])
     setSummaryOpen(false)
   }, [isActionReady])
 
-  // Read a Library handoff seed once on mount (then clear it). Pre-fill the optician
-  // details + Steps 1–2 if the Library pop-up provided them; assets apply below.
+  // Read a Library handoff seed once on mount (then clear it).
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('lo-seed-campaign')
@@ -201,71 +173,57 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Apply the seed the moment Step 3 becomes reachable (Steps 1–2 done). Fires once
-  // — ref-guarded so re-toggling Step 2 can't re-apply it, and so the reset effect
-  // above can't wipe it first. One group per asset type, one instance per campaign
-  // asset, with its design pre-selected.
+  // Apply the seed once Step 3 becomes reachable. Maps each campaign asset (legacy
+  // assetType key) onto a deliverable, grouped per block.
   useEffect(() => {
     if (!isActionReady || !seedRef.current) return
     const seed = seedRef.current
     seedRef.current = null
     if (!seed.assets?.length) return
 
-    const groups: { at: AssetType; entries: SeedAsset[] }[] = []
+    const byBlock = new Map<BlockKey, AssetBriefingInstance[]>()
     for (const sa of seed.assets) {
       const at = assetTypes.find(a => a._id === sa.assetTypeId)
       if (!at) continue
-      let group = groups.find(g => g.at._id === at._id)
-      if (!group) { group = { at, entries: [] }; groups.push(group) }
-      group.entries.push(sa)
+      // Prefer a direct deliverable key; fall back to the legacy assetType-key map.
+      const def = getDeliverable(at.key) ?? getDeliverable(LEGACY_KEY_MAP[at.key] ?? '')
+      if (!def) continue
+      const inst = newAssetInstance(def.key)
+      if (sa.designId) {
+        const slot = def.design === 'multi' ? sa.designId : (designSides(def, {}) ? 'front' : 'main')
+        const themeId = themes.find(t => t.designs?.some(d => d._id === sa.designId))?._id ?? null
+        inst.designs = [{ slot, themeId, designId: sa.designId, designTitle: sa.designTitle ?? '' }]
+      }
+      const list = byBlock.get(def.block) ?? []
+      list.push(inst)
+      byBlock.set(def.block, list)
     }
-    if (groups.length === 0) return
+    if (byBlock.size === 0) return
 
-    setSelAssetTypes(groups.map(g => g.at))
-    setAssetBriefings(groups.map((g, i) => ({
-      assetTypeId: g.at._id,
-      assetKey: g.at.key,
-      blockType: g.at.blockType,
-      label: g.at.label,
-      icon: g.at.icon || '🧩',
-      heroImage: g.at.heroImage,
+    setAssetBriefings([...byBlock.entries()].map(([blockKey, instances], i) => ({
+      blockKey,
       accentColor: ACCENTS[i % ACCENTS.length],
-      instances: g.entries.map(sa => ({
-        ...newAssetInstance(),
-        data: getPrefillForCampaign(g.at.blockType, seed),
-        selectedThemeId: sa.designId ? (themes.find(t => t.designs?.some(d => d._id === sa.designId))?._id ?? null) : null,
-        selectedDesignId: sa.designId ?? null,
-        selectedDesignTitle: sa.designTitle ?? null,
-      })),
+      instances,
     })))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionReady, assetTypes, themes])
 
-  const toggleAssetType = useCallback((assetType: AssetType) => {
-    setSelAssetTypes(prev => {
-      if (prev.some(a => a._id === assetType._id)) {
-        setAssetBriefings(b => b.filter(x => x.assetTypeId !== assetType._id))
-        return prev.filter(a => a._id !== assetType._id)
+  const toggleBlock = useCallback((blockKey: BlockKey) => {
+    setAssetBriefings(prev => {
+      if (prev.some(b => b.blockKey === blockKey)) {
+        return prev.filter(b => b.blockKey !== blockKey)
       }
-      setAssetBriefings(b => [...b, {
-        assetTypeId: assetType._id,
-        assetKey: assetType.key,
-        blockType: assetType.blockType,
-        label: assetType.label,
-        icon: assetType.icon || '🧩',
-        heroImage: assetType.heroImage,
-        accentColor: ACCENTS[prev.length % ACCENTS.length],
-        instances: [newAssetInstance()],
-      }])
-      return [...prev, assetType]
+      const deliverables = deliverablesForBlock(blockKey)
+      // Single-deliverable blocks (social, email) start with their one instance.
+      const instances = deliverables.length === 1 ? [newAssetInstance(deliverables[0].key)] : []
+      return [...prev, { blockKey, accentColor: ACCENTS[prev.length % ACCENTS.length], instances }]
     })
   }, [])
 
   const resetAll = useCallback(() => {
-    setSelAssetTypes([])
     setAssetBriefings([])
     setSelSubjects([])
-    setSharedFields({ deadline: '', liveDate: '', desc4: '', bgInfo: '', refUrl: '' })
+    setSharedFields(EMPTY_SHARED)
   }, [])
 
   return (
@@ -298,7 +256,6 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
               setCustomAction('')
               setActionValidUntil('')
               setActionScope('')
-              setSelAssetTypes([])
               setSelSubjects([])
               setAssetBriefings([])
             }}
@@ -360,16 +317,18 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
           <SelectionStep
             stepNumber={3}
             question={copy.steps.needQuestion}
-            items={assetTypes.map(a => ({ id: a._id, label: a.label, icon: a.icon || '🧩', subtitle: a.subtitle }))}
-            selected={selAssetTypes.map(a => a._id)}
+            items={BLOCKS.map(b => ({
+              id: b.key,
+              label: (copy.briefing.blocks as Record<string, { label: string; subtitle: string }>)[b.key]?.label ?? b.key,
+              icon: b.icon,
+              subtitle: (copy.briefing.blocks as Record<string, { label: string; subtitle: string }>)[b.key]?.subtitle,
+            }))}
+            selected={selectedBlockKeys}
             multiSelect={true}
             variant="rich"
-            answeredLabel={selAssetTypes.map(a => a.label).join(', ')}
-            campaignCountPerItem={Object.fromEntries(assetBriefings.map(b => [b.assetTypeId, b.instances.length]))}
-            onSelect={(id) => {
-              const at = assetTypes.find(a => a._id === id)
-              if (at) toggleAssetType(at)
-            }}
+            answeredLabel={selectedBlockKeys.map(k => (copy.briefing.blocks as Record<string, { label: string }>)[k]?.label ?? k).join(', ')}
+            campaignCountPerItem={Object.fromEntries(assetBriefings.map(b => [b.blockKey, b.instances.length]))}
+            onSelect={(id) => toggleBlock(id as BlockKey)}
           />
         )}
 
@@ -405,15 +364,11 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, subjects, 
           customAction={customAction}
           actionValidUntil={actionValidUntil}
           actionScope={actionScope}
-          selAssetTypes={selAssetTypes}
           selSubjects={selSubjects}
           assetBriefings={assetBriefings}
           themes={themes}
           sharedFields={sharedFields}
-          onRemove={(assetTypeId) => {
-            const at = selAssetTypes.find(a => a._id === assetTypeId)
-            if (at) toggleAssetType(at)
-          }}
+          onRemoveBlock={(blockKey) => toggleBlock(blockKey)}
           onClose={() => setSummaryOpen(false)}
         />
       )}

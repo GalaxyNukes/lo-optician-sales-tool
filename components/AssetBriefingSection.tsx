@@ -20,9 +20,10 @@ interface Props {
 }
 
 export function AssetBriefingSection({ assetBriefings, sharedFields, themes, selSubjects, onUpdateBriefings, onUpdateShared }: Props) {
-  const { copy } = useI18n()
+  const { copy, briefingOptions } = useI18n()
   const setShared = (key: keyof SharedBriefingFields) => (value: string) => onUpdateShared(prev => ({ ...prev, [key]: value }))
   const totalInstances = assetBriefings.reduce((sum, b) => sum + b.instances.length, 0)
+  const core = copy.briefing.core
 
   return (
     <div className={styles.wrap}>
@@ -37,28 +38,64 @@ export function AssetBriefingSection({ assetBriefings, sharedFields, themes, sel
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>{copy.briefing.timing}</div>
+        <div className={styles.sectionTitle}>{copy.briefing.coreTitle}</div>
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>{core.title}</label>
+          <input className={styles.input} type="text" value={sharedFields.title} onChange={e => setShared('title')(e.target.value)} placeholder={core.titlePh} />
+        </div>
+
         <div className={styles.row2}>
           <div className={styles.field}>
-            <label className={styles.fieldLabel}>{copy.briefing.deadline}</label>
+            <label className={styles.fieldLabel}>{core.deadline} <span className={styles.optional}>{copy.briefing.optionalHint}</span></label>
             <input className={styles.input} type="date" value={sharedFields.deadline} onChange={e => setShared('deadline')(e.target.value)} />
           </div>
           <div className={styles.field}>
-            <label className={styles.fieldLabel}>{copy.briefing.liveDate}</label>
+            <label className={styles.fieldLabel}>{core.liveDate} <span className={styles.optional}>{copy.briefing.optionalHint}</span></label>
             <input className={styles.input} type="date" value={sharedFields.liveDate} onChange={e => setShared('liveDate')(e.target.value)} />
           </div>
         </div>
+
         <div className={styles.field}>
-          <label className={styles.fieldLabel}>{copy.briefing.shortDescription}</label>
-          <input className={styles.input} type="text" value={sharedFields.desc4} onChange={e => setShared('desc4')(e.target.value)} placeholder={copy.briefing.shortDescriptionPlaceholder} />
+          <label className={styles.fieldLabel}>{core.mainMessage}</label>
+          <input className={styles.input} type="text" value={sharedFields.mainMessage} onChange={e => setShared('mainMessage')(e.target.value)} placeholder={core.mainMessagePh} />
         </div>
-        <div className={styles.field}>
-          <label className={styles.fieldLabel}>{copy.briefing.backgroundInfo}</label>
-          <textarea className={styles.textarea} value={sharedFields.bgInfo} onChange={e => setShared('bgInfo')(e.target.value)} placeholder={copy.briefing.backgroundPlaceholder} />
+
+        <div className={styles.row2}>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>{core.owner}</label>
+            <input className={styles.input} type="text" value={sharedFields.owner} onChange={e => setShared('owner')(e.target.value)} placeholder={core.ownerPh} />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>{core.audience}</label>
+            <input className={styles.input} type="text" value={sharedFields.audience} onChange={e => setShared('audience')(e.target.value)} placeholder={core.audiencePh} />
+          </div>
         </div>
+
         <div className={styles.field}>
-          <label className={styles.fieldLabel}>{copy.briefing.similarReference}</label>
+          <label className={styles.fieldLabel}>{core.logoRequired}</label>
+          <div className={styles.pills}>
+            {briefingOptions.yesNo.map(o => (
+              <button
+                key={o.value}
+                type="button"
+                className={`${styles.pill} ${sharedFields.logoRequired === o.value ? styles.pillOn : ''}`}
+                onClick={() => setShared('logoRequired')(sharedFields.logoRequired === o.value ? '' : o.value)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>{core.reference}</label>
           <input className={styles.input} type="url" value={sharedFields.refUrl} onChange={e => setShared('refUrl')(e.target.value)} placeholder="https://..." />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>{core.background}</label>
+          <textarea className={styles.textarea} value={sharedFields.bgInfo} onChange={e => setShared('bgInfo')(e.target.value)} placeholder={core.backgroundPh} />
         </div>
       </div>
 
@@ -66,7 +103,7 @@ export function AssetBriefingSection({ assetBriefings, sharedFields, themes, sel
       <div className={styles.campaignGroups}>
         {assetBriefings.map((b, index) => (
           <AssetBriefingGroup
-            key={b.assetTypeId}
+            key={b.blockKey}
             briefing={b}
             accent={b.accentColor || ACCENTS[index % ACCENTS.length]}
             themes={themes}

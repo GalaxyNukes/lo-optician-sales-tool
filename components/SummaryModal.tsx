@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import type { Goal, Action, Subject, AssetType, Theme } from './types'
+import type { Goal, Action, Subject, Theme } from './types'
 import { useI18n } from './i18n'
 import { getLogoSvgMarkup } from './Logo'
 import { summarizeAssetFields } from './assetFields'
-import { CUSTOM_DESIGN } from './ThemeDesignPicker'
+import { getBlock, getDeliverable, designSides } from './deliverables'
+import type { BlockKey } from './deliverables'
 import type { AssetBriefing, AssetBriefingInstance, SharedBriefingFields } from './CampaignCatalog'
 import styles from './SummaryModal.module.css'
 
@@ -20,12 +21,11 @@ interface Props {
   customAction: string
   actionValidUntil: string
   actionScope: string
-  selAssetTypes: AssetType[]
   selSubjects: Subject[]
   assetBriefings: AssetBriefing[]
   themes: Theme[]
   sharedFields: SharedBriefingFields
-  onRemove: (assetTypeId: string) => void
+  onRemoveBlock: (blockKey: BlockKey) => void
   onClose: () => void
 }
 
@@ -47,37 +47,54 @@ export function SummaryModal({
   customAction,
   actionValidUntil,
   actionScope,
-  selAssetTypes,
   selSubjects,
   assetBriefings,
   themes,
   sharedFields,
-  onRemove,
+  onRemoveBlock,
   onClose,
 }: Props) {
   const { copy, lang, formatDateLocale, translateCountry, translateScope, translateBriefingValue } = useI18n()
   const [extraNote, setExtraNote] = useState('')
+  const core = copy.briefing.core
 
-  const designLabel = (inst: AssetBriefingInstance): { label: string; note?: string } | null => {
-    if (inst.selectedThemeId === CUSTOM_DESIGN) return { label: copy.summary.customDesign, note: inst.customDesignNote || undefined }
-    if (inst.selectedDesignId) {
-      const theme = inst.selectedThemeId ? themes.find(t => t._id === inst.selectedThemeId) : null
-      const title = inst.selectedDesignTitle || ''
-      return { label: theme ? `${theme.title} · ${title}` : title }
+  const blockLabel = (key: BlockKey) => (copy.briefing.blocks as Record<string, { label: string }>)[key]?.label ?? key
+  const blockIcon = (key: BlockKey) => getBlock(key)?.icon ?? '🧩'
+  const deliverableLabel = (key: string) => (copy.briefing.deliverables as Record<string, string>)[key] ?? key
+
+  const designSummary = (inst: AssetBriefingInstance): { label: string; note?: string } | null => {
+    if (inst.designIsCustom) return { label: copy.summary.customDesign, note: inst.customDesignNote || undefined }
+    if (!inst.designs.length) return null
+    const def = getDeliverable(inst.deliverableKey)
+    const sides = def ? designSides(def, inst.data) : null
+    if (sides) {
+      const parts = sides.map(slot => {
+        const p = inst.designs.find(d => d.slot === slot)
+        const slotName = slot === 'front' ? copy.briefing.designSideFront : copy.briefing.designSideBack
+        return p ? `${slotName}: ${p.designTitle}` : null
+      }).filter(Boolean) as string[]
+      return parts.length ? { label: parts.join(' · ') } : null
     }
-    return null
+    const titles = inst.designs.map(d => d.designTitle).filter(Boolean)
+    return titles.length ? { label: titles.join(', ') } : null
   }
 
+  const logoLabel = sharedFields.logoRequired ? translateBriefingValue('yesNo', sharedFields.logoRequired) : ''
+
   const rows = [
+    sharedFields.title && { label: sharedFields.title, cat: core.title },
     selGoal && { label: selGoal.label, cat: copy.summary.goal },
     selAction && { label: selAction.isCustom && customAction ? customAction : selAction.label, cat: copy.summary.action },
     actionValidUntil && { label: actionValidUntil, cat: copy.summary.validUntil },
     actionScope && { label: translateScope(actionScope), cat: copy.summary.scope },
-    selAssetTypes.length > 0 && { label: selAssetTypes.map(a => a.label).join(', '), cat: copy.summary.assetsCat },
+    assetBriefings.length > 0 && { label: assetBriefings.map(b => blockLabel(b.blockKey)).join(', '), cat: copy.summary.assetsCat },
     selSubjects.length > 0 && { label: selSubjects.map(subject => subject.label).join(', '), cat: copy.summary.subjects },
     sharedFields.deadline && { label: sharedFields.deadline, cat: copy.summary.deadline },
     sharedFields.liveDate && { label: sharedFields.liveDate, cat: copy.summary.liveDate },
-    sharedFields.desc4 && { label: sharedFields.desc4, cat: copy.summary.description },
+    sharedFields.mainMessage && { label: sharedFields.mainMessage, cat: core.mainMessage },
+    sharedFields.owner && { label: sharedFields.owner, cat: core.owner },
+    sharedFields.audience && { label: sharedFields.audience, cat: core.audience },
+    logoLabel && { label: logoLabel, cat: core.logoRequired },
   ].filter(Boolean) as { label: string; cat: string }[]
 
   function openBriefingDoc() {
@@ -85,18 +102,18 @@ export function SummaryModal({
 
     const assetSections = assetBriefings.map((group, index) => {
       const accent = group.accentColor || ACCENTS[index % ACCENTS.length]
-      const instancesHtml = group.instances.map((inst, i) => {
-        const fields = summarizeAssetFields(group.assetKey, inst.data, copy, translateBriefingValue)
+      const instancesHtml = group.instances.map((inst) => {
+        const fields = summarizeAssetFields(inst.deliverableKey, inst.data, copy, translateBriefingValue)
         const fieldsHtml = fields.length
           ? fields.map(field => `<tr><td class="doc-lbl">${escapeHtml(field.label)}</td><td class="doc-val">${escapeHtml(field.value)}</td></tr>`).join('')
           : `<tr><td colspan="2" class="doc-empty">${escapeHtml(copy.summary.noDetails)}</td></tr>`
-        const design = designLabel(inst)
+        const design = designSummary(inst)
         const designHtml = design
           ? `<div class="design-row"><span class="design-tag">${escapeHtml(copy.summary.designLabel)}</span> ${escapeHtml(design.label)}${design.note ? ` — ${escapeHtml(design.note)}` : ''}</div>`
           : ''
         return `<div class="block">
           <div class="block-head" style="background:${accent}">
-            <span class="block-icon">${escapeHtml(group.icon)}</span> ${escapeHtml(group.label)} — ${escapeHtml(copy.briefing.instance(i + 1))}
+            <span class="block-icon">${escapeHtml(getDeliverable(inst.deliverableKey)?.icon ?? '🧩')}</span> ${escapeHtml(deliverableLabel(inst.deliverableKey))}
           </div>
           <table class="block-table">${fieldsHtml}</table>
           ${designHtml}
@@ -109,7 +126,7 @@ export function SummaryModal({
           <div class="campaign-index" style="background:${accent}">${index + 1}</div>
           <div>
             <div class="campaign-type-badge">${escapeHtml(copy.summary.assetsCat)}</div>
-            <div class="campaign-name">${escapeHtml(group.icon)} ${escapeHtml(group.label)}</div>
+            <div class="campaign-name">${escapeHtml(blockIcon(group.blockKey))} ${escapeHtml(blockLabel(group.blockKey))}</div>
           </div>
           <div class="asset-count">${group.instances.length}×</div>
         </div>
@@ -119,8 +136,20 @@ export function SummaryModal({
 
     const logoSvg = getLogoSvgMarkup('white', 26)
 
+    const ctxItems = [
+      { label: copy.summary.goal, value: selGoal?.label || copy.common.noData, big: true },
+      { label: copy.summary.action, value: selAction?.isCustom && customAction ? customAction : selAction?.label || copy.common.noData },
+      { label: copy.summary.assetsCat, value: assetBriefings.map(b => blockLabel(b.blockKey)).join(', ') || copy.common.noData },
+      { label: copy.summary.validUntil, value: actionValidUntil || copy.common.noData },
+      { label: copy.summary.scope, value: actionScope ? translateScope(actionScope) : copy.common.noData },
+      { label: core.owner, value: sharedFields.owner || copy.common.noData },
+      { label: core.audience, value: sharedFields.audience || copy.common.noData },
+      { label: core.logoRequired, value: logoLabel || copy.common.noData },
+    ]
+    const ctxHtml = ctxItems.map(i => `<div class="ctx-item"><span class="ctx-label">${escapeHtml(i.label)}</span><span class="ctx-val${i.big ? ' big' : ''}">${escapeHtml(i.value)}</span></div>`).join('')
+
     const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8">
-<title>${escapeHtml(copy.briefing.title)} — ${escapeHtml(clientName || copy.summary.unknown)}</title>
+<title>${escapeHtml(copy.briefing.title)} — ${escapeHtml(sharedFields.title || clientName || copy.summary.unknown)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -155,20 +184,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
 .campaign-type-badge{font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#888884;margin-bottom:.2rem}
 .campaign-name{font-size:1rem;font-weight:700;color:#0D2340;line-height:1.2}
 .asset-count{margin-left:auto;font-size:.78rem;font-weight:700;color:#0D2340;background:#F3F0EC;border:1px solid #E0DDD6;border-radius:100px;padding:.2rem .7rem}
-.formats-row{display:flex;flex-wrap:wrap;gap:.3rem;padding:.75rem 1.25rem;border-bottom:1px solid #E0DDD6;background:#F9F8F6}
-.fmt-tag{font-size:.7rem;padding:.22rem .6rem;border-radius:4px;background:#E8E4DC;color:#444}
 .blocks-list{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.7rem}
 .block{border:1px solid #E0DDD6;border-radius:8px;overflow:hidden}
 .block-head{padding:.6rem .9rem;font-size:.82rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:.45rem}
 .block-icon{font-size:.95rem}
 .block-table{width:100%;border-collapse:collapse}
-.doc-lbl{font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#888884;padding:.45rem .9rem;width:140px;vertical-align:top;border-right:1px solid #E0DDD6;border-bottom:1px solid #F3F0EC}
+.doc-lbl{font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#888884;padding:.45rem .9rem;width:160px;vertical-align:top;border-right:1px solid #E0DDD6;border-bottom:1px solid #F3F0EC}
 .doc-val{font-size:.8rem;color:#1A1612;padding:.45rem .9rem;border-bottom:1px solid #F3F0EC;line-height:1.5}
 .block-table tr:last-child .doc-lbl,.block-table tr:last-child .doc-val{border-bottom:none}
 .doc-empty{font-size:.75rem;color:#888884;font-style:italic;padding:.6rem .9rem}
 .design-row{font-size:.78rem;color:#1A1612;padding:.55rem .9rem;border-top:1px solid #E0DDD6;background:#F9F8F6}
 .design-tag{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888884;margin-right:.4rem}
-.empty-blocks{font-size:.75rem;color:#aaa;font-style:italic;padding:.5rem 0}
 .doc-footer{text-align:center;padding:1.5rem 0 .5rem;font-size:.7rem;color:#888884}
 .print-btn{position:fixed;bottom:1.5rem;right:1.5rem;background:#0D2340;color:#fff;border:none;padding:.75rem 1.5rem;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;box-shadow:0 4px 16px rgba(13,35,64,.25)}
 @media print{.print-btn{display:none}.wrap{margin:0;padding:0}}
@@ -178,7 +204,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
     <div>${logoSvg}</div>
     <div class="doc-header-right">
       <div class="doc-label">${escapeHtml(copy.summary.docTitle)}</div>
-      <div class="doc-title">${escapeHtml(clientName || copy.summary.unknown)}</div>
+      <div class="doc-title">${escapeHtml(sharedFields.title || clientName || copy.summary.unknown)}</div>
       <div class="doc-date">${escapeHtml(copy.summary.createdOn)} ${escapeHtml(dateStr)}</div>
     </div>
   </div>
@@ -192,17 +218,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
   <div class="section">
     <div class="section-head">${escapeHtml(copy.summary.campaignContext)}</div>
     <div class="section-body">
-      <div class="ctx-grid">
-        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.goal)}</span><span class="ctx-val big">${escapeHtml(selGoal?.label || copy.common.noData)}</span></div>
-        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.action)}</span><span class="ctx-val">${escapeHtml(selAction?.isCustom && customAction ? customAction : selAction?.label || copy.common.noData)}</span></div>
-        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.assetsCat)}</span><span class="ctx-val">${escapeHtml(selAssetTypes.map(a => a.label).join(', ') || copy.common.noData)}</span></div>
-        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.validUntil)}</span><span class="ctx-val">${escapeHtml(actionValidUntil || copy.common.noData)}</span></div>
-        <div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.scope)}</span><span class="ctx-val">${escapeHtml(actionScope ? translateScope(actionScope) : copy.common.noData)}</span></div>
-      </div>
-      ${(sharedFields.deadline || sharedFields.liveDate) ? `<div class="timing-row">${sharedFields.deadline ? `<div class="timing-box"><div class="timing-label">${escapeHtml(copy.summary.taskDeadline)}</div><div class="timing-date">${escapeHtml(sharedFields.deadline)}</div></div>` : ''}${sharedFields.liveDate ? `<div class="timing-box"><div class="timing-label">${escapeHtml(copy.summary.liveDate)}</div><div class="timing-date">${escapeHtml(sharedFields.liveDate)}</div></div>` : ''}</div>` : ''}
-      ${sharedFields.desc4 ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.description)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.desc4)}</p></div>` : ''}
-      ${sharedFields.bgInfo ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.background)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.bgInfo)}</p></div>` : ''}
-      ${sharedFields.refUrl ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(copy.summary.reference)}</span><a href="${escapeHtml(sharedFields.refUrl)}" style="font-size:.82rem;color:#0D2340">${escapeHtml(sharedFields.refUrl)}</a></div>` : ''}
+      <div class="ctx-grid">${ctxHtml}</div>
+      ${(sharedFields.deadline || sharedFields.liveDate) ? `<div class="timing-row">${sharedFields.deadline ? `<div class="timing-box"><div class="timing-label">${escapeHtml(core.deadline)}</div><div class="timing-date">${escapeHtml(sharedFields.deadline)}</div></div>` : ''}${sharedFields.liveDate ? `<div class="timing-box"><div class="timing-label">${escapeHtml(core.liveDate)}</div><div class="timing-date">${escapeHtml(sharedFields.liveDate)}</div></div>` : ''}</div>` : ''}
+      ${sharedFields.mainMessage ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(core.mainMessage)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.mainMessage)}</p></div>` : ''}
+      ${sharedFields.bgInfo ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(core.background)}</span><p class="note" style="margin-top:.35rem">${escapeHtml(sharedFields.bgInfo)}</p></div>` : ''}
+      ${sharedFields.refUrl ? `<div class="divider"></div><div class="ctx-item"><span class="ctx-label">${escapeHtml(core.reference)}</span><a href="${escapeHtml(sharedFields.refUrl)}" style="font-size:.82rem;color:#0D2340">${escapeHtml(sharedFields.refUrl)}</a></div>` : ''}
     </div>
   </div>
 
@@ -255,22 +275,18 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
 
           <div className={styles.sectionLabel}>{copy.summary.selectedAssetsLabel}</div>
           <div className={styles.assets}>
-            {selAssetTypes.map(at => {
-              const group = assetBriefings.find(b => b.assetTypeId === at._id)
-              const count = group?.instances.length ?? 0
-              return (
-                <div key={at._id} className={styles.asset}>
-                  <div className={styles.assetImg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', background: 'var(--surface)' }}>
-                    {at.icon || '🧩'}
-                  </div>
-                  <div className={styles.assetInfo}>
-                    <div className={styles.assetTitle}>{at.label}</div>
-                    <div className={styles.assetType}>{copy.bar.chosenAssets(count)}</div>
-                  </div>
-                  <button className={styles.removeBtn} onClick={() => onRemove(at._id)}>✕ {copy.common.remove}</button>
+            {assetBriefings.map(group => (
+              <div key={group.blockKey} className={styles.asset}>
+                <div className={styles.assetImg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', background: 'var(--surface)' }}>
+                  {blockIcon(group.blockKey)}
                 </div>
-              )
-            })}
+                <div className={styles.assetInfo}>
+                  <div className={styles.assetTitle}>{blockLabel(group.blockKey)}</div>
+                  <div className={styles.assetType}>{copy.bar.chosenAssets(group.instances.length)}</div>
+                </div>
+                <button className={styles.removeBtn} onClick={() => onRemoveBlock(group.blockKey)}>✕ {copy.common.remove}</button>
+              </div>
+            ))}
           </div>
 
           <div className={styles.divider} />
@@ -280,19 +296,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3F0EC;color:#1A1612
             const accent = group.accentColor || ACCENTS[index % ACCENTS.length]
 
             return (
-              <div key={group.assetTypeId} className={styles.campaignPreview} style={{ borderLeftColor: accent }}>
+              <div key={group.blockKey} className={styles.campaignPreview} style={{ borderLeftColor: accent }}>
                 <div className={styles.campaignPreviewHead}>
                   <span className={styles.campaignPreviewDot} style={{ background: accent }}>{index + 1}</span>
-                  <span className={styles.campaignPreviewTitle}>{group.icon} {group.label}</span>
+                  <span className={styles.campaignPreviewTitle}>{blockIcon(group.blockKey)} {blockLabel(group.blockKey)}</span>
                   <span className={styles.campaignPreviewCount}>{group.instances.length}×</span>
                 </div>
-                {group.instances.map((inst, i) => {
-                  const fields = summarizeAssetFields(group.assetKey, inst.data, copy, translateBriefingValue)
-                  const design = designLabel(inst)
+                {group.instances.map((inst) => {
+                  const fields = summarizeAssetFields(inst.deliverableKey, inst.data, copy, translateBriefingValue)
+                  const design = designSummary(inst)
 
                   return (
                     <div key={inst.id} className={styles.previewBlock}>
-                      <div className={styles.previewBlockHead}><span>{group.icon}</span> {copy.briefing.instance(i + 1)}</div>
+                      <div className={styles.previewBlockHead}><span>{getDeliverable(inst.deliverableKey)?.icon ?? '🧩'}</span> {deliverableLabel(inst.deliverableKey)}</div>
                       {fields.map(field => (
                         <div key={`${field.label}-${field.value}`} className={styles.previewBlockRow}>
                           <span className={styles.previewBlockLabel}>{field.label}</span>

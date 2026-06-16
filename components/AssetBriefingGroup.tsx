@@ -4,10 +4,12 @@ import { useState } from 'react'
 import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 import { useI18n } from './i18n'
 import type { Theme, Subject } from './types'
-import type { AssetBriefing, AssetBriefingInstance, BriefingValue } from './CampaignCatalog'
+import type { BriefingValue, DesignPick } from './deliverables'
+import { getBlock, getDeliverable, deliverablesForBlock, designSides } from './deliverables'
+import type { AssetBriefing, AssetBriefingInstance } from './CampaignCatalog'
 import { newAssetInstance } from './CampaignCatalog'
 import { AssetFields } from './assetFields'
-import { ThemeDesignPicker, CUSTOM_DESIGN } from './ThemeDesignPicker'
+import { ThemeDesignPicker } from './ThemeDesignPicker'
 import bs from './BriefingSection.module.css'
 import styles from './AssetBriefing.module.css'
 
@@ -22,35 +24,42 @@ interface Props {
 export function AssetBriefingGroup({ briefing, accent, themes, selSubjects, onUpdate }: Props) {
   const { copy } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
-  const id = briefing.assetTypeId
+  const [picking, setPicking] = useState(briefing.instances.length === 0)
+  const blockKey = briefing.blockKey
+  const block = getBlock(blockKey)
+  const blockLabel = (copy.briefing.blocks as Record<string, { label: string }>)[blockKey]?.label ?? blockKey
+  const deliverableLabel = (key: string) => (copy.briefing.deliverables as Record<string, string>)[key] ?? key
+  const choices = deliverablesForBlock(blockKey)
 
   const patchInstance = (instId: string, patch: Partial<AssetBriefingInstance>) =>
-    onUpdate(prev => prev.map(b => b.assetTypeId !== id ? b : {
+    onUpdate(prev => prev.map(b => b.blockKey !== blockKey ? b : {
       ...b,
       instances: b.instances.map(inst => inst.id !== instId ? inst : { ...inst, ...patch }),
     }))
 
   const setField = (instId: string, key: string, value: BriefingValue) =>
-    onUpdate(prev => prev.map(b => b.assetTypeId !== id ? b : {
+    onUpdate(prev => prev.map(b => b.blockKey !== blockKey ? b : {
       ...b,
       instances: b.instances.map(inst => inst.id !== instId ? inst : { ...inst, data: { ...inst.data, [key]: value } }),
     }))
 
-  const addInstance = () =>
-    onUpdate(prev => prev.map(b => b.assetTypeId !== id ? b : { ...b, instances: [...b.instances, newAssetInstance()] }))
+  const addDeliverable = (deliverableKey: string) => {
+    onUpdate(prev => prev.map(b => b.blockKey !== blockKey ? b : { ...b, instances: [...b.instances, newAssetInstance(deliverableKey)] }))
+    setPicking(false)
+  }
 
   const removeInstance = (instId: string) =>
-    onUpdate(prev => prev.map(b => b.assetTypeId !== id ? b : {
+    onUpdate(prev => prev.map(b => b.blockKey !== blockKey ? b : {
       ...b,
-      instances: b.instances.length <= 1 ? b.instances : b.instances.filter(inst => inst.id !== instId),
+      instances: b.instances.filter(inst => inst.id !== instId),
     }))
 
   return (
     <div className={bs.campaignGroup} style={{ '--accent': accent } as CSSProperties}>
       <div className={bs.campaignHeader} style={{ background: accent }} onClick={() => setCollapsed(c => !c)}>
-        <div className={styles.groupIcon}>{briefing.icon}</div>
+        <div className={styles.groupIcon}>{block?.icon ?? '🧩'}</div>
         <div className={bs.campaignHeaderText}>
-          <div className={bs.campaignTitle}>{briefing.label}</div>
+          <div className={bs.campaignTitle}>{blockLabel}</div>
         </div>
         <div className={bs.campaignBlockCount}>{briefing.instances.length}×</div>
         <div className={`${bs.campaignArrow} ${collapsed ? bs.campaignArrowCollapsed : ''}`}>
@@ -61,31 +70,41 @@ export function AssetBriefingGroup({ briefing, accent, themes, selSubjects, onUp
       </div>
       {!collapsed && (
         <div className={bs.campaignBody}>
-          {briefing.heroImage && (
-            <div className={styles.heroBanner}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={briefing.heroImage} alt="" />
-            </div>
-          )}
-          {briefing.instances.map((inst, index) => (
+          {briefing.instances.map(inst => (
             <InstanceCard
               key={inst.id}
               inst={inst}
-              index={index + 1}
-              total={briefing.instances.length}
-              assetKey={briefing.assetKey}
+              title={deliverableLabel(inst.deliverableKey)}
               themes={themes}
               selSubjects={selSubjects}
               onField={(key, value) => setField(inst.id, key, value)}
               onRemove={() => removeInstance(inst.id)}
-              onPickDesign={(themeId, id, title) => patchInstance(inst.id, { selectedThemeId: themeId, selectedDesignId: id, selectedDesignTitle: title })}
-              onPickCustom={() => patchInstance(inst.id, { selectedThemeId: CUSTOM_DESIGN, selectedDesignId: null, selectedDesignTitle: null })}
-              onCustomNote={note => patchInstance(inst.id, { customDesignNote: note })}
+              onSetDesigns={(designs) => patchInstance(inst.id, { designs, designIsCustom: false })}
+              onToggleCustom={() => patchInstance(inst.id, inst.designIsCustom ? { designIsCustom: false } : { designIsCustom: true, designs: [] })}
+              onCustomNote={(note) => patchInstance(inst.id, { customDesignNote: note })}
             />
           ))}
-          <button type="button" className={styles.addInstance} onClick={addInstance}>
-            {copy.briefing.addAnother(briefing.label)}
-          </button>
+
+          {picking ? (
+            <div className={styles.deliverablePicker}>
+              <div className={styles.pickerTitle}>{copy.briefing.chooseDeliverableTitle}</div>
+              <div className={styles.deliverableGrid}>
+                {choices.map(d => (
+                  <button key={d.key} type="button" className={styles.deliverableCard} onClick={() => addDeliverable(d.key)}>
+                    <span className={styles.deliverableIcon}>{d.icon}</span>
+                    <span className={styles.deliverableLabel}>{deliverableLabel(d.key)}</span>
+                  </button>
+                ))}
+              </div>
+              {briefing.instances.length > 0 && (
+                <button type="button" className={styles.pickerCancel} onClick={() => setPicking(false)}>{copy.common.close}</button>
+              )}
+            </div>
+          ) : (
+            <button type="button" className={styles.addInstance} onClick={() => setPicking(true)}>
+              {copy.briefing.addDeliverable}
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -94,61 +113,65 @@ export function AssetBriefingGroup({ briefing, accent, themes, selSubjects, onUp
 
 function InstanceCard({
   inst,
-  index,
-  total,
-  assetKey,
+  title,
   themes,
   selSubjects,
   onField,
   onRemove,
-  onPickDesign,
-  onPickCustom,
+  onSetDesigns,
+  onToggleCustom,
   onCustomNote,
 }: {
   inst: AssetBriefingInstance
-  index: number
-  total: number
-  assetKey: string
+  title: string
   themes: Theme[]
   selSubjects: Subject[]
   onField: (key: string, value: BriefingValue) => void
   onRemove: () => void
-  onPickDesign: (themeId: string, designKey: string, designTitle: string) => void
-  onPickCustom: () => void
+  onSetDesigns: (designs: DesignPick[]) => void
+  onToggleCustom: () => void
   onCustomNote: (note: string) => void
 }) {
   const { copy } = useI18n()
+  const def = getDeliverable(inst.deliverableKey)
+  const hasDesignTab = def ? def.design !== 'none' : false
   const [tab, setTab] = useState<'fields' | 'design'>('fields')
+
+  const mode = def?.design === 'multi' ? 'multi' : 'single'
+  const sides = def ? designSides(def, inst.data) : null
 
   return (
     <div className={styles.instance}>
       <div className={styles.instanceHead}>
-        <span className={styles.instanceTitle}>{copy.briefing.instance(index)}</span>
-        {total > 1 && (
-          <button type="button" className={styles.instanceRemove} onClick={onRemove} title={copy.common.remove}>✕</button>
-        )}
+        <span className={styles.instanceIcon}>{def?.icon ?? '🧩'}</span>
+        <span className={styles.instanceTitle}>{title}</span>
+        <button type="button" className={styles.instanceRemove} onClick={onRemove} title={copy.common.remove}>✕</button>
       </div>
-      <div className={styles.tabs}>
-        <button type="button" className={`${styles.tab} ${tab === 'fields' ? styles.tabActive : ''}`} onClick={() => setTab('fields')}>
-          {copy.briefing.tabFields}
-        </button>
-        <button type="button" className={`${styles.tab} ${tab === 'design' ? styles.tabActive : ''}`} onClick={() => setTab('design')}>
-          {copy.briefing.tabDesign}
-        </button>
-      </div>
+      {hasDesignTab && (
+        <div className={styles.tabs}>
+          <button type="button" className={`${styles.tab} ${tab === 'fields' ? styles.tabActive : ''}`} onClick={() => setTab('fields')}>
+            {copy.briefing.tabFields}
+          </button>
+          <button type="button" className={`${styles.tab} ${tab === 'design' ? styles.tabActive : ''}`} onClick={() => setTab('design')}>
+            {copy.briefing.tabDesign}
+          </button>
+        </div>
+      )}
       <div className={styles.tabPanel}>
-        {tab === 'fields' ? (
-          <AssetFields assetKey={assetKey} data={inst.data} onChange={onField} />
+        {(!hasDesignTab || tab === 'fields') ? (
+          <AssetFields deliverableKey={inst.deliverableKey} data={inst.data} onChange={onField} />
         ) : (
           <ThemeDesignPicker
-            assetKey={assetKey}
+            deliverableKey={inst.deliverableKey}
+            mode={mode}
+            sides={sides}
             themes={themes}
             selSubjects={selSubjects}
-            selectedThemeId={inst.selectedThemeId}
-            selectedDesignId={inst.selectedDesignId}
+            designs={inst.designs}
+            isCustom={inst.designIsCustom}
             customNote={inst.customDesignNote}
-            onPickDesign={onPickDesign}
-            onPickCustom={onPickCustom}
+            onSetDesigns={onSetDesigns}
+            onToggleCustom={onToggleCustom}
             onCustomNote={onCustomNote}
           />
         )}

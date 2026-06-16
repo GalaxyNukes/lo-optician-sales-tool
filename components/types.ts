@@ -25,15 +25,17 @@ export interface Subject {
   label: string
 }
 
-// ── Asset-type flow (Step 3 redesign) ─────────────────────────────────────────
+// ── Asset-type docs = campaign-package deliverables (Library handoff) ──────────
+// Step 3 itself is driven by the code registry (components/deliverables.ts).
+// These docs only let a Campaign reference deliverables via `key`.
 export interface AssetType {
   _id: string
   label: string
   subtitle?: string
-  key: string          // selects the frontend field set
-  blockType: string    // accent / grouping bucket (af-social, af-print, …)
-  icon?: string        // emoji shown on the Step 3 card
-  heroImage?: string   // optional inspiration banner (resolved URL, e.g. POS)
+  key: string          // matches a deliverable key in deliverables.ts
+  blockType?: string   // legacy grouping bucket — no longer used by the UI
+  icon?: string
+  heroImage?: string   // optional inspiration banner (resolved URL)
 }
 
 export interface Design {

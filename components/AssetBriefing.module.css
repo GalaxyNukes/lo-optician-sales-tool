@@ -71,3 +71,29 @@
 .frameBrowserBar { display: flex; align-items: center; gap: 4px; padding: 6px 8px; background: #ECEAE6; }
 .frameDot { width: 7px; height: 7px; border-radius: 50%; background: #C8C4BC; flex-shrink: 0; }
 .frameAddr { flex: 1; height: 8px; border-radius: 4px; background: #fff; margin-left: 4px; }
+
+/* ── Deliverable picker + per-block group (redesign) ─────────────────────── */
+.instanceIcon { font-size: 1rem; line-height: 1; }
+
+.deliverablePicker { border: 1.5px dashed var(--bdr); border-radius: 10px; padding: 1rem; background: #fff; }
+.pickerTitle { font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .75rem; }
+.deliverableGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5rem; }
+.deliverableCard { display: flex; flex-direction: column; align-items: flex-start; gap: .4rem; padding: .8rem .9rem; border: 1px solid var(--bdr); border-radius: 9px; background: #fff; cursor: pointer; transition: border-color .15s, transform .12s, box-shadow .15s; text-align: left; font-family: inherit; }
+.deliverableCard:hover { border-color: var(--navy); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(13,35,64,.08); }
+.deliverableIcon { font-size: 1.2rem; }
+.deliverableLabel { font-size: .82rem; font-weight: 500; color: var(--navy); line-height: 1.25; }
+.pickerCancel { margin-top: .75rem; padding: .5rem .9rem; border: 1px solid var(--bdr); border-radius: 7px; background: #fff; color: var(--muted); font-size: .76rem; cursor: pointer; font-family: inherit; }
+.pickerCancel:hover { border-color: var(--navy); color: var(--navy); }
+
+/* per-side design slots */
+.designHint { font-size: .72rem; color: var(--muted); }
+.slotRow { display: flex; gap: .5rem; }
+.slotTab { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; padding: .6rem .8rem; border: 1.5px solid var(--bdr); border-radius: 9px; background: #fff; cursor: pointer; text-align: left; transition: all .15s; font-family: inherit; }
+.slotTab:hover { border-color: var(--navy); }
+.slotTabOn { border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy); }
+.slotName { font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.slotPick { font-size: .8rem; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 600px) {
+  .deliverableGrid { grid-template-columns: repeat(2, 1fr); }
+}
