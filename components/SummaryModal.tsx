@@ -7,7 +7,7 @@ import { getLogoSvgMarkup } from './Logo'
 import { summarizeAssetFields } from './assetFields'
 import { getBlock, getDeliverable, designSides } from './deliverables'
 import type { BlockKey } from './deliverables'
-import { parseMockup, mockupDocHtml } from './StorefrontMockup'
+import { parseMockups, mockupDocHtml } from './StorefrontMockup'
 import type { AssetBriefing, AssetBriefingInstance, SharedBriefingFields } from './CampaignCatalog'
 import styles from './SummaryModal.module.css'
 
@@ -112,8 +112,8 @@ export function SummaryModal({
         const designHtml = design
           ? `<div class="design-row"><span class="design-tag">${escapeHtml(copy.summary.designLabel)}</span> ${escapeHtml(design.label)}${design.note ? ` — ${escapeHtml(design.note)}` : ''}</div>`
           : ''
-        const mk = typeof inst.data['mockup'] === 'string' ? parseMockup(inst.data['mockup'] as string) : null
-        const mockupHtml = mk?.bg ? mockupDocHtml(mk, escapeHtml) : ''
+        const mkList = typeof inst.data['mockup'] === 'string' ? parseMockups(inst.data['mockup'] as string) : []
+        const mockupHtml = mkList.map(mk => mockupDocHtml(mk, escapeHtml)).join('')
         return `<div class="block">
           <div class="block-head" style="background:${accent}">
             <span class="block-icon">${escapeHtml(getDeliverable(inst.deliverableKey)?.icon ?? '🧩')}</span> ${escapeHtml(deliverableLabel(inst.deliverableKey))}

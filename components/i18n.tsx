@@ -252,6 +252,9 @@ const translations = {
         removeDecal: 'Verwijder decal',
         save: 'Mockup opslaan',
         placed: (count: number) => `${count} decal${count !== 1 ? 's' : ''} geplaatst`,
+        addMockup: '+ Mockup toevoegen',
+        removeMockup: 'Verwijder mockup',
+        count: (n: number) => `${n} mockup${n !== 1 ? 's' : ''}`,
       },
       fields: {
         storefrontPhotos: "Foto's etalage / winkelgevel",
@@ -558,6 +561,9 @@ const translations = {
         removeDecal: 'Supprimer le sticker',
         save: 'Enregistrer la maquette',
         placed: (count: number) => `${count} sticker${count !== 1 ? 's' : ''} placé${count !== 1 ? 's' : ''}`,
+        addMockup: '+ Ajouter une maquette',
+        removeMockup: 'Supprimer la maquette',
+        count: (n: number) => `${n} maquette${n !== 1 ? 's' : ''}`,
       },
       fields: {
         storefrontPhotos: 'Photos vitrine / façade',
@@ -864,6 +870,9 @@ const translations = {
         removeDecal: 'Remove decal',
         save: 'Save mockup',
         placed: (count: number) => `${count} decal${count !== 1 ? 's' : ''} placed`,
+        addMockup: '+ Add mockup',
+        removeMockup: 'Remove mockup',
+        count: (n: number) => `${n} mockup${n !== 1 ? 's' : ''}`,
       },
       fields: {
         storefrontPhotos: 'Shopfront / window photos',

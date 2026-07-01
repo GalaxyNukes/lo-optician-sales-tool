@@ -15,9 +15,15 @@ export const metadata: Metadata = {
   description: 'Optician sales tool for LensOnline campaign selection and briefing',
 }
 
+// Runs before first paint so the saved theme is applied with no flash of the wrong mode.
+const themeInitScript = `(function(){try{var t=localStorage.getItem('lo-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="nl" className={font.variable}>
+    <html lang="nl" className={font.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <LanguageProvider>{children}</LanguageProvider>
       </body>

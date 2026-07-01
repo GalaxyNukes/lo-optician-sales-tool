@@ -1,24 +1,100 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  /* surfaces */
   --bg: #FBFBFB;
   --surface: #F5F5F5;
-  --white: #FFFFFF;
+  --elev: #FFFFFF;        /* raised: cards, modals, inputs */
+  --white: #FFFFFF;       /* legacy alias of --elev */
+  --cu: #D8D4CC;          /* block / selectable cards */
+  --card-hover: #C8C4BC;
+  --nav-bg: #F1F1F1;
+
+  /* brand fill (selected state, primary buttons) */
   --navy: #0D2340;
   --navy-h: #0a1c33;
+  --brand-block: #0D2340; /* large brand bands: hero, headers, footers */
+  --on-brand: #FFFFFF;    /* text/icon on brand fill */
+  --navy-tint: rgba(13,35,64,.04);
+
+  /* text */
   --text: #0D2340;
+  --card-text: #3A3630;   /* text on --cu cards */
   --mid: #4A4A4A;
   --muted: #888884;
+  --faint: #BBBBBB;
+
+  /* borders */
   --bdr: #D4D0C8;
   --bdr-l: #E0DDD6;
-  --cu: #D8D4CC;
+
+  /* accents */
   --gn: #1A9E7E;
   --gn-bg: rgba(26,158,126,.10);
   --ge: #2A7EC8;
   --ge-bg: rgba(42,126,200,.10);
   --gr: #8B5E2A;
   --gr-bg: rgba(139,94,42,.10);
+  --danger: #C0392B;
+  --danger-bg: #FDF0F0;
+  --danger-bdr: #E0B4B4;
+
+  /* effects */
+  --shadow-c: rgba(0,0,0,.08);
+  --shadow-c-2: rgba(0,0,0,.04);
+  --overlay: rgba(13,35,64,.45);
+  --ring: rgba(13,35,64,.07);
+
   --font: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* surfaces */
+  --bg: #0B1524;
+  --surface: #0F1E33;
+  --elev: #15263E;
+  --white: #15263E;
+  --cu: #16273E;
+  --card-hover: #1F3554;
+  --nav-bg: #0F1E33;
+
+  /* brand fill — lifted so white text stays legible on dark */
+  --navy: #3E7BC2;
+  --navy-h: #4F8BD0;
+  --brand-block: #16304F; /* deep elevated navy band, white text stays legible */
+  --on-brand: #FFFFFF;
+  --navy-tint: rgba(87,166,236,.10);
+
+  /* text */
+  --text: #E8EEF6;
+  --card-text: #DCE4EF;
+  --mid: #B4C0D2;
+  --muted: #8294AD;
+  --faint: #5C6E86;
+
+  /* borders */
+  --bdr: #26384F;
+  --bdr-l: #1B2B41;
+
+  /* accents — brightened for dark surfaces */
+  --gn: #34C99E;
+  --gn-bg: rgba(52,201,158,.14);
+  --ge: #57A6EC;
+  --ge-bg: rgba(87,166,236,.14);
+  --gr: #CC9A5E;
+  --gr-bg: rgba(204,154,94,.14);
+  --danger: #E5675A;
+  --danger-bg: rgba(229,103,90,.12);
+  --danger-bdr: rgba(229,103,90,.34);
+
+  /* effects */
+  --shadow-c: rgba(0,0,0,.40);
+  --shadow-c-2: rgba(0,0,0,.28);
+  --overlay: rgba(0,0,0,.60);
+  --ring: rgba(87,166,236,.35);
+
+  color-scheme: dark;
 }
 
 body {
@@ -27,6 +103,7 @@ body {
   color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background .25s ease, color .25s ease;
 }
 
 .page {

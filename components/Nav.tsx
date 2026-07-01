@@ -1,6 +1,7 @@
 'use client'
 
 import { Logo } from './Logo'
+import { ThemeToggle } from './ThemeToggle'
 import { useI18n } from './i18n'
 import styles from './Nav.module.css'
 
@@ -13,7 +14,7 @@ export function Nav({ activePage = 'builder' }: Props) {
 
   return (
     <nav className={styles.nav}>
-      <a href="/" className={styles.logo}><Logo fill="#0D2340" height={26} /></a>
+      <a href="/" className={styles.logo}><Logo fill="var(--text)" height={26} /></a>
       <div className={styles.links}>
         <a href="/" className={`${styles.link} ${activePage === 'builder' ? styles.active : ''}`}>{copy.nav.builder}</a>
         <a href="/library" className={`${styles.link} ${activePage === 'library' ? styles.active : ''}`}>{copy.nav.library}</a>
@@ -31,6 +32,7 @@ export function Nav({ activePage = 'builder' }: Props) {
             {copy.nav.languages[code]}
           </button>
         ))}
+        <ThemeToggle />
       </div>
     </nav>
   )

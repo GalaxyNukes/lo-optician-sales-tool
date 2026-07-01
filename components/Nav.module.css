@@ -3,7 +3,7 @@
   align-items: center;
   padding: 0 3.5rem;
   height: 58px;
-  background: #F1F1F1;
+  background: var(--nav-bg);
   border-bottom: 1px solid var(--bdr-l);
   position: sticky;
   top: 0;
@@ -14,9 +14,9 @@
 .link { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
 .link:hover, .active { color: var(--navy); }
 .langs { margin-left: auto; display: flex; align-items: center; gap: .35rem; }
-.langBtn { min-width: 34px; height: 30px; padding: 0 .55rem; border: 1px solid var(--bdr); border-radius: 999px; font-size: .65rem; font-weight: 600; letter-spacing: .08em; color: var(--muted); background: rgba(255,255,255,.7); transition: all .15s; }
+.langBtn { min-width: 34px; height: 30px; padding: 0 .55rem; border: 1px solid var(--bdr); border-radius: 999px; font-size: .65rem; font-weight: 600; letter-spacing: .08em; color: var(--muted); background: var(--elev); transition: all .15s; }
 .langBtn:hover { border-color: var(--navy); color: var(--navy); }
-.langBtnActive { background: var(--navy); border-color: var(--navy); color: #fff; }
+.langBtnActive { background: var(--navy); border-color: var(--navy); color: var(--on-brand); }
 
 @media (max-width: 700px) {
   .nav { padding: 0 1.5rem; height: auto; min-height: 58px; flex-wrap: wrap; row-gap: .5rem; padding-top: .7rem; padding-bottom: .7rem; }

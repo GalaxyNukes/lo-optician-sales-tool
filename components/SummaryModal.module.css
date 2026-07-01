@@ -1,5 +1,5 @@
-.bg { position: fixed; inset: 0; background: rgba(13,35,64,.45); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: fadeIn .25s ease; }
-.modal { background: #fff; border-radius: 14px; width: 100%; max-width: 700px; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(13,35,64,.18); animation: slideUp .28s ease; }
+.bg { position: fixed; inset: 0; background: var(--overlay); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: fadeIn .25s ease; }
+.modal { background: var(--elev); border-radius: 14px; width: 100%; max-width: 700px; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(13,35,64,.18); animation: slideUp .28s ease; }
 .header { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--bdr-l); display: flex; align-items: flex-start; justify-content: space-between; }
 .title { font-size: 1.05rem; font-weight: 600; color: var(--navy); }
 .sub { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
@@ -25,14 +25,14 @@
 .assetTitle { font-size: .78rem; font-weight: 500; color: var(--navy); }
 .assetType { font-size: .66rem; color: var(--muted); }
 .removeBtn { font-size: .66rem; color: var(--muted); cursor: pointer; padding: .18rem .4rem; border: none; background: none; transition: color .15s; flex-shrink: 0; }
-.removeBtn:hover { color: #c0392b; }
+.removeBtn:hover { color: var(--danger); }
 .textarea { width: 100%; min-height: 75px; padding: .65rem .85rem; font-family: inherit; font-size: .82rem; color: var(--text); border: 1px solid var(--bdr); border-radius: 8px; background: var(--bg); outline: none; resize: vertical; line-height: 1.55; transition: border-color .15s; }
 .textarea:focus { border-color: var(--navy); }
 .textarea::placeholder { color: var(--muted); }
 .footer { padding: 1rem 1.5rem 1.5rem; display: flex; gap: .6rem; justify-content: flex-end; border-top: 1px solid var(--bdr-l); }
 .secBtn { padding: .62rem 1.2rem; border: 1px solid var(--bdr); border-radius: 7px; font-size: .8rem; color: var(--mid); background: none; cursor: pointer; transition: all .15s; font-family: inherit; }
 .secBtn:hover { border-color: var(--navy); color: var(--navy); }
-.priBtn { padding: .62rem 1.4rem; background: var(--navy); color: #fff; border-radius: 7px; font-size: .8rem; font-weight: 500; cursor: pointer; transition: background .15s; font-family: inherit; border: none; }
+.priBtn { padding: .62rem 1.4rem; background: var(--navy); color: var(--on-brand); border-radius: 7px; font-size: .8rem; font-weight: 500; cursor: pointer; transition: background .15s; font-family: inherit; border: none; }
 .priBtn:hover { background: var(--navy-h); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -40,7 +40,7 @@
 /* per-campaign briefing preview in modal */
 .campaignPreview { border-left: 3px solid var(--navy); padding: .65rem .75rem .65rem .9rem; margin-bottom: .65rem; background: var(--surface); border-radius: 0 6px 6px 0; }
 .campaignPreviewHead { display: flex; align-items: center; gap: .55rem; margin-bottom: .5rem; }
-.campaignPreviewDot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .62rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+.campaignPreviewDot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .62rem; font-weight: 700; color: var(--on-brand); flex-shrink: 0; }
 .campaignPreviewTitle { font-size: .82rem; font-weight: 600; color: var(--navy); flex: 1; }
 .campaignPreviewCount { font-size: .66rem; color: var(--muted); white-space: nowrap; }
 .previewBlock { margin-left: .5rem; margin-bottom: .4rem; }

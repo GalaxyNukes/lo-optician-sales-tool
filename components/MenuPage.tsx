@@ -33,8 +33,8 @@ const CAT_LABELS: Record<Cat, string> = { a: 'Categorie A', b: 'Categorie B', c:
 // (Activatie/Effort stay white). A row "differs" when availability isn't the same
 // across the compared tiers.
 const CMP_ORDER: Cat[] = ['a', 'b', 'c']
-const CMP_TIER_BEIGE = '#F2F0EA'
-const CMP_TIER_LIGHT = '#FBFAF6'
+const CMP_TIER_BEIGE = 'var(--surface)'
+const CMP_TIER_LIGHT = 'var(--bg)'
 
 function cmpAvailabilityDiffers(tiers: Cat[], block: PartnerBlock): boolean {
   const avail = tiers.map((t) => visibleInCategory(t, block))

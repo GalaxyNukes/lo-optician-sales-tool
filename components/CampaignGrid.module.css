@@ -1,14 +1,14 @@
 .divider { height: 1px; background: var(--bdr); margin: 1.5rem 0 0; }
 .grid { display: grid; grid-template-columns: repeat(5,1fr); gap: .7rem; margin-top: 1.25rem; }
 .empty { grid-column: 1/-1; padding: 3rem; text-align: center; color: var(--muted); font-size: .83rem; }
-.card { background: #fff; border-radius: 9px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: border-color .18s, box-shadow .2s, transform .2s; animation: fadeUp .22s ease both; }
+.card { background: var(--elev); border-radius: 9px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: border-color .18s, box-shadow .2s, transform .2s; animation: fadeUp .22s ease both; }
 .card:hover { box-shadow: 0 4px 18px rgba(13,35,64,.10); transform: translateY(-2px); }
 .selected { border-color: var(--navy); }
-.imgWrap { position: relative; height: 126px; overflow: hidden; background: #C8C4BC; }
+.imgWrap { position: relative; height: 126px; overflow: hidden; background: var(--card-hover); }
 .img { object-fit: cover; transition: transform .38s; }
 .card:hover .img { transform: scale(1.04); }
 .badges { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: flex-start; }
-.typeBadge { font-size: .58rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; background: rgba(13,35,64,.80); color: #fff; padding: .2rem .55rem; border-radius: 100px; white-space: nowrap; }
+.typeBadge { font-size: .58rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; background: rgba(13,35,64,.80); color: var(--on-brand); padding: .2rem .55rem; border-radius: 100px; white-space: nowrap; }
 .styleBadge { position: absolute; bottom: 8px; right: 8px; font-size: .58rem; background: rgba(255,255,255,.88); color: var(--mid); padding: .2rem .55rem; border-radius: 100px; white-space: nowrap; }
 .check { width: 22px; height: 22px; border-radius: 5px; border: 1.5px solid rgba(255,255,255,.75); background: rgba(8,8,8,.40); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; flex-shrink: 0; }
 .check:hover { background: rgba(8,8,8,.65); }

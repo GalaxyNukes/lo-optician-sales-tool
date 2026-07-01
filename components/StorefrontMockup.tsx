@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { useI18n } from './i18n'
 import type { Decal, DecalCategory } from './types'
@@ -27,14 +27,22 @@ export function parseMockup(value: string | undefined): MockupState {
   if (!value) return EMPTY_MOCKUP
   try {
     const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return (parsed[0] as MockupState) ?? EMPTY_MOCKUP
     if (parsed && typeof parsed === 'object' && Array.isArray(parsed.decals)) return parsed as MockupState
   } catch { /* ignore */ }
   return EMPTY_MOCKUP
 }
 
-export function hasMockup(value: string | undefined): boolean {
-  const m = parseMockup(value)
-  return Boolean(m.bg)
+// A storefront deliverable can hold several mockups. Back-compatible with the old
+// single-object shape.
+export function parseMockups(value: string | undefined): MockupState[] {
+  if (!value) return []
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed.filter((m): m is MockupState => m && Array.isArray(m.decals) && Boolean(m.bg))
+    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.decals) && parsed.bg) return [parsed as MockupState]
+  } catch { /* ignore */ }
+  return []
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
@@ -47,6 +55,45 @@ function readImage(file: File): Promise<string> {
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
+}
+
+// ── Decal tone detection (white decals → navy tile, dark decals → white tile) ────
+type Tone = 'light' | 'dark'
+const toneCache = new Map<string, Tone>()
+
+function useDecalTone(src: string): Tone | null {
+  const [tone, setTone] = useState<Tone | null>(() => toneCache.get(src) ?? null)
+  useEffect(() => {
+    if (toneCache.has(src)) { setTone(toneCache.get(src)!); return }
+    let cancelled = false
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      try {
+        const size = 24
+        const c = document.createElement('canvas')
+        c.width = size; c.height = size
+        const ctx = c.getContext('2d')
+        if (!ctx) return
+        ctx.drawImage(img, 0, 0, size, size)
+        const { data } = ctx.getImageData(0, 0, size, size)
+        let lum = 0, weight = 0
+        for (let i = 0; i < data.length; i += 4) {
+          const a = data[i + 3] / 255
+          if (a < 0.1) continue
+          lum += (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * a
+          weight += a
+        }
+        const avg = weight ? lum / weight : 255
+        const t: Tone = avg >= 140 ? 'light' : 'dark'
+        toneCache.set(src, t)
+        if (!cancelled) setTone(t)
+      } catch { /* cross-origin taint — keep default tile */ }
+    }
+    img.src = src
+    return () => { cancelled = true }
+  }, [src])
+  return tone
 }
 
 // ── Read-only composition (field thumbnail + on-screen summary) ─────────────────
@@ -73,6 +120,18 @@ export function mockupDocHtml(state: MockupState, escapeHtml: (s: string) => str
   return `<div class="mockup"><div class="mockup-canvas"><img src="${escapeHtml(state.bg)}" style="width:100%;display:block" />${decals}</div></div>`
 }
 
+// ── Palette tile (auto-contrast background) ─────────────────────────────────────
+function PaletteItem({ decal, disabled, onClick }: { decal: Decal; disabled: boolean; onClick: () => void }) {
+  const tone = useDecalTone(decal.image)
+  const toned = tone === 'light' ? styles.paletteLight : tone === 'dark' ? styles.paletteDark : ''
+  return (
+    <button type="button" className={`${styles.paletteItem} ${toned}`} onClick={onClick} disabled={disabled} title={decal.label}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={decal.image} alt={decal.label} />
+    </button>
+  )
+}
+
 // ── Editor modal ────────────────────────────────────────────────────────────────
 export function StorefrontMockupModal({
   initial,
@@ -83,7 +142,7 @@ export function StorefrontMockupModal({
   onSave: (state: MockupState) => void
   onClose: () => void
 }) {
-  const { copy } = useI18n()
+  const { copy, lang, setLang } = useI18n()
   const m = copy.briefing.mockup
   const library = useDecals()
   const [bg, setBg] = useState<string | null>(initial.bg)
@@ -137,6 +196,13 @@ export function StorefrontMockupModal({
       <div className={styles.modal}>
         <div className={styles.head}>
           <div className={styles.title}>{m.title}</div>
+          <div className={styles.langToggle}>
+            {(['nl', 'fr'] as const).map(l => (
+              <button key={l} type="button" className={`${styles.langBtn} ${lang === l ? styles.langOn : ''}`} onClick={() => setLang(l)}>
+                {copy.nav.languages[l]}
+              </button>
+            ))}
+          </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label={copy.common.close}>✕</button>
         </div>
 
@@ -188,10 +254,7 @@ export function StorefrontMockupModal({
                 <div className={styles.decalsHint}>{bg ? m.libraryHint : m.noBgYet}</div>
                 <div className={styles.palette}>
                   {visibleLibrary.map(d => (
-                    <button key={d._id} type="button" className={styles.paletteItem} onClick={() => bg && addDecal(d.image)} disabled={!bg} title={d.label}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={d.image} alt={d.label} />
-                    </button>
+                    <PaletteItem key={d._id} decal={d} disabled={!bg} onClick={() => bg && addDecal(d.image)} />
                   ))}
                 </div>
               </>

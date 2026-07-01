@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 import { useI18n } from './i18n'
 import type { BriefingValue, DimensionEntry, FieldSpec, FieldRow, ShowIf } from './deliverables'
 import { getDeliverable, flattenRows, formatPeriod, formatDimensions } from './deliverables'
-import { StorefrontMockupModal, MockupPreview, parseMockup } from './StorefrontMockup'
+import { StorefrontMockupModal, MockupPreview, parseMockups, EMPTY_MOCKUP } from './StorefrontMockup'
+import type { MockupState } from './StorefrontMockup'
 import styles from './BriefingSection.module.css'
 
 // ── Type guards / accessors ───────────────────────────────────────────────────
@@ -331,26 +332,45 @@ function SocialOwn({ label, data, onChange }: { label: string; data: Record<stri
   )
 }
 
+const PENCIL = (
+  <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M10.8 2.6l2.6 2.6L6 12.6l-3 .4.4-3 7.4-7.4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" /></svg>
+)
+
 function MockupField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const { copy } = useI18n()
   const m = copy.briefing.mockup
-  const [open, setOpen] = useState(false)
-  const state = parseMockup(value)
+  const mockups = parseMockups(value)
+  const [editing, setEditing] = useState<number | 'new' | null>(null)
+
+  const commit = (list: MockupState[]) => onChange(JSON.stringify(list.filter(mk => mk.bg)))
+  const save = (state: MockupState) => {
+    if (editing === 'new') commit([...mockups, state])
+    else if (typeof editing === 'number') commit(mockups.map((mk, i) => (i === editing ? state : mk)))
+    setEditing(null)
+  }
+  const remove = (index: number) => commit(mockups.filter((_, i) => i !== index))
+
   return (
     <Field label={label}>
-      {state.bg && (
-        <div className={styles.mockupThumbWrap}>
-          <MockupPreview state={state} className={styles.mockupThumb} />
-        </div>
-      )}
-      <button type="button" className={styles.mockupBtn} onClick={() => setOpen(true)}>
-        {state.bg ? m.edit : m.open}
-      </button>
-      {open && (
+      <div className={styles.mockupList}>
+        {mockups.map((mk, i) => (
+          <div key={i} className={styles.mockupCard}>
+            <MockupPreview state={mk} className={styles.mockupThumb} />
+            <div className={styles.mockupActions}>
+              <button type="button" className={styles.mockupIconBtn} onClick={() => setEditing(i)} title={m.edit}>{PENCIL}</button>
+              <button type="button" className={styles.mockupIconBtn} onClick={() => remove(i)} title={m.removeMockup}>✕</button>
+            </div>
+          </div>
+        ))}
+        <button type="button" className={styles.mockupAdd} onClick={() => setEditing('new')}>
+          {mockups.length ? m.addMockup : m.open}
+        </button>
+      </div>
+      {editing !== null && (
         <StorefrontMockupModal
-          initial={state}
-          onSave={s => { onChange(JSON.stringify(s)); setOpen(false) }}
-          onClose={() => setOpen(false)}
+          initial={editing === 'new' ? EMPTY_MOCKUP : mockups[editing]}
+          onSave={save}
+          onClose={() => setEditing(null)}
         />
       )}
     </Field>
@@ -549,8 +569,11 @@ export function summarizeAssetFields(
       if (str('storyOn') === 'yes') parts.push(`${copy.briefing.social.story} ×${str('storyCount') || '1'}`)
       if (parts.length) out.push({ label, value: parts.join(', ') })
     } else if (spec.kind === 'storefrontMockup') {
-      const mk = parseMockup(str(spec.key))
-      if (mk.bg) out.push({ label, value: copy.briefing.mockup.placed(mk.decals.length) })
+      const list = parseMockups(str(spec.key))
+      if (list.length) {
+        const total = list.reduce((n, mk) => n + mk.decals.length, 0)
+        out.push({ label, value: `${copy.briefing.mockup.count(list.length)} · ${copy.briefing.mockup.placed(total)}` })
+      }
     } else if (spec.kind === 'static') {
       out.push({ label, value: (copy.briefing.values as Record<string, string>)[spec.valueKey] ?? spec.valueKey })
     } else if (spec.kind !== 'upload') {
