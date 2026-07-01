@@ -63,7 +63,7 @@ export const visualStylesQuery = groq`
 // Curated decal library for the storefront mockup tool.
 export const decalsQuery = groq`
   *[_type == "decal" && active != false] | order(orderRank asc) {
-    _id, label, category, "image": image.asset->url
+    _id, label, category, lang, "image": image.asset->url
   }
 `
 
@@ -147,7 +147,7 @@ export const allTaxonomyQuery = groq`{
   "needs":     *[_type == "need"        && active != false] | order(orderRank asc) { _id, label, icon, briefingBlockType, linkedAssetFilters },
   "assetTypes":*[_type == "assetType"   && active != false] | order(orderRank asc) { _id, label, subtitle, key, blockType, icon, "heroImage": heroImage.asset->url },
   "themes":    *[_type == "theme"       && active != false] | order(orderRank asc) { _id, title, season, "subjects": subjects[]->{ _id, label }, "designs": designs[]->{ _id, title, "image": image.asset->url, "previewVideo": previewVideo.asset->url } },
-  "decals":    *[_type == "decal"        && active != false] | order(orderRank asc) { _id, label, category, "image": image.asset->url },
+  "decals":    *[_type == "decal"        && active != false] | order(orderRank asc) { _id, label, category, lang, "image": image.asset->url },
   "subjects":  *[_type == "subject"     && active != false] | order(orderRank asc) { _id, label },
   "styles":    *[_type == "visualStyle" && active != false] | order(orderRank asc) { _id, label }
 }`

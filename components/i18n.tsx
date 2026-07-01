@@ -254,6 +254,8 @@ const translations = {
         placed: (count: number) => `${count} decal${count !== 1 ? 's' : ''} geplaatst`,
         addMockup: '+ Mockup toevoegen',
         removeMockup: 'Verwijder mockup',
+        language: 'Taal decals',
+        langAll: 'Alle',
         count: (n: number) => `${n} mockup${n !== 1 ? 's' : ''}`,
       },
       fields: {
@@ -563,6 +565,8 @@ const translations = {
         placed: (count: number) => `${count} sticker${count !== 1 ? 's' : ''} placé${count !== 1 ? 's' : ''}`,
         addMockup: '+ Ajouter une maquette',
         removeMockup: 'Supprimer la maquette',
+        language: 'Langue des stickers',
+        langAll: 'Toutes',
         count: (n: number) => `${n} maquette${n !== 1 ? 's' : ''}`,
       },
       fields: {
@@ -872,6 +876,8 @@ const translations = {
         placed: (count: number) => `${count} decal${count !== 1 ? 's' : ''} placed`,
         addMockup: '+ Add mockup',
         removeMockup: 'Remove mockup',
+        language: 'Decal language',
+        langAll: 'All',
         count: (n: number) => `${n} mockup${n !== 1 ? 's' : ''}`,
       },
       fields: {

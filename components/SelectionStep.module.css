@@ -87,7 +87,12 @@
 .richTitle { font-size: .85rem; font-weight: 500; color: var(--card-text); line-height: 1.25; }
 .richOn .richTitle { color: var(--on-brand); }
 .richDesc { font-size: .7rem; color: var(--muted); line-height: 1.35; }
-.richOn .richDesc { color: rgba(255,255,255,.7); }
+.richOn .richDesc { color: rgba(255,255,255,.85); }
 
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } .richGrid { grid-template-columns: 1fr; } }
+
+/* dark mode: lighter select chevron so it's visible on dark inputs */
+:global([data-theme="dark"]) .customSelect {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239EB0C9' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+}

@@ -35,6 +35,21 @@ export const decal = defineType({
       validation: (R) => R.required(),
     }),
     defineField({
+      name: 'lang',
+      title: 'Taal',
+      type: 'string',
+      description: 'Voor taalspecifieke decals (bv. quotes). Kies "Taalneutraal" voor logos/badges zonder tekst — die tonen altijd.',
+      options: {
+        list: [
+          { title: 'Taalneutraal (beide)', value: 'both' },
+          { title: 'Nederlands (NL)', value: 'nl' },
+          { title: 'Frans (FR)', value: 'fr' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'both',
+    }),
+    defineField({
       name: 'image',
       title: 'Decal (transparent PNG)',
       type: 'image',

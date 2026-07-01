@@ -59,23 +59,23 @@
   --card-hover: #1F3554;
   --nav-bg: #0F1E33;
 
-  /* brand fill — lifted so white text stays legible on dark */
-  --navy: #3E7BC2;
-  --navy-h: #4F8BD0;
+  /* brand fill — darkened so white text on it clears WCAG AA (4.7:1) */
+  --navy: #3A75BD;
+  --navy-h: #4A83C8;
   --brand-block: #16304F; /* deep elevated navy band, white text stays legible */
   --on-brand: #FFFFFF;
   --navy-tint: rgba(87,166,236,.10);
 
-  /* text */
+  /* text — contrast-tuned (WCAG): muted ≈7:1, faint ≈5:1 on the dark surfaces */
   --text: #E8EEF6;
   --card-text: #DCE4EF;
   --mid: #B4C0D2;
-  --muted: #8294AD;
-  --faint: #5C6E86;
+  --muted: #9EB0C9;
+  --faint: #8496B0;
 
-  /* borders */
-  --bdr: #26384F;
-  --bdr-l: #1B2B41;
+  /* borders — raised so inputs/cards are identifiable (≈3:1 / ≈2:1 vs bg) */
+  --bdr: #4A6389;
+  --bdr-l: #33496A;
 
   /* accents — brightened for dark surfaces */
   --gn: #34C99E;

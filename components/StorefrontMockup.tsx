@@ -142,12 +142,13 @@ export function StorefrontMockupModal({
   onSave: (state: MockupState) => void
   onClose: () => void
 }) {
-  const { copy, lang, setLang } = useI18n()
+  const { copy } = useI18n()
   const m = copy.briefing.mockup
   const library = useDecals()
   const [bg, setBg] = useState<string | null>(initial.bg)
   const [decals, setDecals] = useState<MockupDecal[]>(initial.decals)
   const [cat, setCat] = useState<'all' | DecalCategory>('all')
+  const [decalLang, setDecalLang] = useState<'nl' | 'fr' | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
   const idRef = useRef(0)
@@ -155,7 +156,11 @@ export function StorefrontMockupModal({
 
   const selectedDecal = decals.find(d => d.id === selected) ?? null
   const cats = CATEGORY_ORDER.filter(c => library.some(d => d.category === c))
-  const visibleLibrary = cat === 'all' ? library : library.filter(d => d.category === cat)
+  // Decal-language filter is independent of the site language. Language-neutral
+  // decals (lang 'both' or unset — e.g. logos/badges) always show.
+  const matchesLang = (d: Decal) => !decalLang || d.lang === decalLang || !d.lang || d.lang === 'both'
+  const hasLangDecals = library.some(d => d.lang === 'nl' || d.lang === 'fr')
+  const visibleLibrary = library.filter(d => (cat === 'all' || d.category === cat) && matchesLang(d))
 
   const handleBg = async (files: FileList | null) => {
     if (!files?.[0]) return
@@ -196,13 +201,6 @@ export function StorefrontMockupModal({
       <div className={styles.modal}>
         <div className={styles.head}>
           <div className={styles.title}>{m.title}</div>
-          <div className={styles.langToggle}>
-            {(['nl', 'fr'] as const).map(l => (
-              <button key={l} type="button" className={`${styles.langBtn} ${lang === l ? styles.langOn : ''}`} onClick={() => setLang(l)}>
-                {copy.nav.languages[l]}
-              </button>
-            ))}
-          </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label={copy.common.close}>✕</button>
         </div>
 
@@ -245,6 +243,16 @@ export function StorefrontMockupModal({
               <div className={styles.decalsHint}>{m.noDecals}</div>
             ) : (
               <>
+                {hasLangDecals && (
+                  <>
+                    <div className={styles.sideLabel}>{m.language}</div>
+                    <div className={styles.catChips}>
+                      <button type="button" className={`${styles.catChip} ${decalLang === null ? styles.catChipOn : ''}`} onClick={() => setDecalLang(null)}>{m.langAll}</button>
+                      <button type="button" className={`${styles.catChip} ${decalLang === 'nl' ? styles.catChipOn : ''}`} onClick={() => setDecalLang('nl')}>{copy.nav.languages.nl}</button>
+                      <button type="button" className={`${styles.catChip} ${decalLang === 'fr' ? styles.catChipOn : ''}`} onClick={() => setDecalLang('fr')}>{copy.nav.languages.fr}</button>
+                    </div>
+                  </>
+                )}
                 <div className={styles.catChips}>
                   <button type="button" className={`${styles.catChip} ${cat === 'all' ? styles.catChipOn : ''}`} onClick={() => setCat('all')}>{m.categories.all}</button>
                   {cats.map(c => (

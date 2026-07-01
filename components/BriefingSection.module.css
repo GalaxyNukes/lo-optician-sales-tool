@@ -225,3 +225,9 @@
 .mockupIconBtn:hover { background: #fff; border-color: var(--navy); }
 .mockupAdd { min-height: 130px; width: 220px; max-width: 100%; border: 1.5px dashed var(--bdr); border-radius: 9px; background: var(--elev); color: var(--navy); font-size: .8rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s; }
 .mockupAdd:hover { border-color: var(--navy); background: var(--navy-tint); }
+
+/* dark mode: the select chevron is a hardcoded light-grey data-URI (invisible on
+   dark inputs) — swap in a lighter stroke so it meets contrast on dark surfaces */
+:global([data-theme="dark"]) .select {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239EB0C9' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+}

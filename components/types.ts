@@ -47,10 +47,12 @@ export interface Design {
 
 // Curated decal library for the storefront mockup tool (transparent PNGs).
 export type DecalCategory = 'logo' | 'quote' | 'badge' | 'special'
+export type DecalLang = 'nl' | 'fr' | 'both'
 export interface Decal {
   _id: string
   label: string
   category: DecalCategory
+  lang?: DecalLang      // 'both'/undefined = language-neutral, always shown
   image: string         // resolved URL (transparent PNG)
 }
 
