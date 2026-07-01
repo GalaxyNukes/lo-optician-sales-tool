@@ -34,17 +34,19 @@ export function LibraryStartModal({ campaign, goals, actions, onClose }: Props) 
   const [goalId, setGoalId] = useState<string | null>(campaign.goals?.[0]?._id ?? null)
   const [action, setAction] = useState<Action | null>(null)
   const [customAction, setCustomAction] = useState('')
+  const [validFrom, setValidFrom] = useState('')
   const [validUntil, setValidUntil] = useState('')
   const [scope, setScope] = useState<'store' | 'online' | ''>('')
 
   const isNA = action?._id === NA_ID
   const clientOk = Boolean(country && name.trim() && city.trim())
-  const actionOk = Boolean(action && (!action.isCustom || customAction.trim()) && (isNA || (validUntil && scope)))
+  const actionOk = Boolean(action && (!action.isCustom || customAction.trim()) && (isNA || (validFrom && validUntil && scope)))
   const ready = clientOk && Boolean(goalId) && actionOk
 
   const pickAction = (a: Action) => {
     setAction(a)
     setCustomAction('')
+    setValidFrom('')
     setValidUntil('')
     setScope('')
   }
@@ -56,7 +58,7 @@ export function LibraryStartModal({ campaign, goals, actions, onClose }: Props) 
       goalId,
       action: isNA
         ? { id: NA_ID, scope: 'na' }
-        : { id: action!._id, custom: action!.isCustom ? customAction.trim() : undefined, validUntil, scope: scope as 'store' | 'online' },
+        : { id: action!._id, custom: action!.isCustom ? customAction.trim() : undefined, validFrom, validUntil, scope: scope as 'store' | 'online' },
       prefill: campaign.prefill,
       assets: (campaign.assets || []).map(a => ({
         assetTypeId: a.assetType._id,
@@ -130,12 +132,18 @@ export function LibraryStartModal({ campaign, goals, actions, onClose }: Props) 
           )}
 
           {action && !isNA && (
-            <div className={styles.row2} style={{ marginTop: '.6rem' }}>
-              <div className={styles.field}>
-                <label className={styles.label}>{copy.steps.validUntil}</label>
-                <input className={styles.input} type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} />
+            <>
+              <div className={styles.row2} style={{ marginTop: '.6rem' }}>
+                <div className={styles.field}>
+                  <label className={styles.label}>{copy.steps.validFrom}</label>
+                  <input className={styles.input} type="date" value={validFrom} onChange={e => setValidFrom(e.target.value)} />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>{copy.steps.validUntil}</label>
+                  <input className={styles.input} type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} />
+                </div>
               </div>
-              <div className={styles.field}>
+              <div className={styles.field} style={{ marginTop: '.6rem' }}>
                 <label className={styles.label}>{copy.steps.scopeQuestion}</label>
                 <select className={styles.select} value={scope} onChange={e => setScope(e.target.value as 'store' | 'online')}>
                   <option value="">{copy.common.chooseOne}</option>
@@ -143,7 +151,7 @@ export function LibraryStartModal({ campaign, goals, actions, onClose }: Props) 
                   <option value="online">{copy.steps.scope.online}</option>
                 </select>
               </div>
-            </div>
+            </>
           )}
         </div>
 

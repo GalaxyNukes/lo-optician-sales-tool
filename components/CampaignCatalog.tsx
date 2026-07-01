@@ -70,7 +70,7 @@ export interface SeedAsset {
 export interface CampaignSeed {
   client?: { name: string; city: string; country: string }
   goalId?: string | null
-  action?: { id: string; custom?: string; validUntil?: string; scope?: 'store' | 'online' | 'na' } | null
+  action?: { id: string; custom?: string; validFrom?: string; validUntil?: string; scope?: 'store' | 'online' | 'na' } | null
   prefill?: Campaign['prefill']
   assets: SeedAsset[]
 }
@@ -107,6 +107,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
   const [selGoal, setSelGoal] = useState<Goal | null>(null)
   const [selAction, setSelAction] = useState<Action | null>(null)
   const [customAction, setCustomAction] = useState('')
+  const [actionValidFrom, setActionValidFrom] = useState('')
   const [actionValidUntil, setActionValidUntil] = useState('')
   const [actionScope, setActionScope] = useState<'store' | 'online' | 'na' | ''>('')
   const [selSubjects, setSelSubjects] = useState<Subject[]>([])
@@ -128,7 +129,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
     isActionChosen && (
       isNotApplicableAction
         ? true
-        : Boolean(actionValidUntil && actionScope)
+        : Boolean(actionValidFrom && actionValidUntil && actionScope)
     )
   )
   const showBriefing = isActionReady && assetBriefings.length > 0
@@ -166,6 +167,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
         if (a) {
           setSelAction(a)
           setCustomAction(seed.action.custom || '')
+          setActionValidFrom(seed.action.validFrom || '')
           setActionValidUntil(seed.action.validUntil || '')
           setActionScope(seed.action.scope || '')
         }
@@ -255,6 +257,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
               setSelGoal(goals.find(g => g._id === id) || null)
               setSelAction(null)
               setCustomAction('')
+              setActionValidFrom('')
               setActionValidUntil('')
               setActionScope('')
               setSelSubjects([])
@@ -275,7 +278,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
             collapseWhenComplete={true}
             answeredLabel={selAction ? [
               selAction.isCustom && customAction ? customAction : selAction.label,
-              !isNotApplicableAction && actionValidUntil ? `${copy.summary.validUntil.toLowerCase()} ${actionValidUntil}` : '',
+              !isNotApplicableAction && (actionValidFrom || actionValidUntil) ? `${actionValidFrom || '…'} → ${actionValidUntil || '…'}` : '',
               !isNotApplicableAction && actionScope ? translateScope(actionScope) : '',
             ].filter(Boolean).join(' / ') : undefined}
             customAction={selAction?.isCustom ? { value: customAction, onChange: setCustomAction } : undefined}
@@ -283,6 +286,12 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
               if (!selAction || isNotApplicableAction) return undefined
 
               return [
+                {
+                  label: copy.steps.validFrom,
+                  type: 'date' as const,
+                  value: actionValidFrom,
+                  onChange: setActionValidFrom,
+                },
                 {
                   label: copy.steps.validUntil,
                   type: 'date' as const,
@@ -307,6 +316,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
               setSelAction(a)
               if (didChange) {
                 setCustomAction('')
+                setActionValidFrom('')
                 setActionValidUntil('')
                 setActionScope(a?._id === notApplicableAction._id ? 'na' : '')
               }
@@ -364,6 +374,7 @@ export function CampaignCatalog({ goals, actions, assetTypes, themes, decals, su
           selGoal={selGoal}
           selAction={selAction}
           customAction={customAction}
+          actionValidFrom={actionValidFrom}
           actionValidUntil={actionValidUntil}
           actionScope={actionScope}
           selSubjects={selSubjects}

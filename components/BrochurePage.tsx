@@ -1,6 +1,7 @@
 'use client'
 
 import type React from 'react'
+import { useRef } from 'react'
 import { useI18n } from './i18n'
 import styles from './BrochurePage.module.css'
 
@@ -21,6 +22,8 @@ export interface PartnerBlock {
   deliverables?: string[]
   warning?: string
   images?: Array<{ _key: string; url: string; caption?: string; lang?: string; dimensions?: { width: number; height: number } }>
+  imageLayout?: 'grid' | 'carousel'
+  section?: 'always' | 'request'
   timing?: string
   // Legacy flat budget — retained until the A/B/C migration; superseded by categoryA/B/C.
   budgetMin?: string
@@ -47,7 +50,71 @@ const BENTO_PATTERNS: Array<Array<React.CSSProperties>> = [
 
 const ALWAYS_TIMINGS = new Set(['always', 'ongoing', 'seasonal'])
 
-function BlockBento({ images, noVisualAssets }: { images: PartnerBlock['images']; noVisualAssets?: boolean }) {
+// Which body section a block belongs to. The explicit CMS `section` field wins;
+// otherwise fall back to deriving it from `timing` (back-compat for older blocks).
+export function isAlwaysBlock(block: PartnerBlock): boolean {
+  if (block.section === 'always') return true
+  if (block.section === 'request') return false
+  return ALWAYS_TIMINGS.has(block.timing || '')
+}
+
+type BlockImage = NonNullable<PartnerBlock['images']>[number]
+
+function EmptyImages({ noVisualAssets }: { noVisualAssets?: boolean }) {
+  if (noVisualAssets) {
+    return (
+      <div className={styles.bentoEmpty}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9 12h6" />
+        </svg>
+        <span>Geen visuele assets</span>
+        <span className={styles.bentoEmptySub}>voor deze activatie</span>
+      </div>
+    )
+  }
+  return (
+    <div className={styles.bentoEmpty}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <path d="m21 15-5-5L5 21" />
+      </svg>
+      <span>Campagne mockups</span>
+      <span className={styles.bentoEmptySub}>Voeg visuals toe via Studio</span>
+    </div>
+  )
+}
+
+// Horizontal scroll-snap carousel (chosen per block via imageLayout).
+function BlockCarousel({ images }: { images: BlockImage[] }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const nudge = (dir: number) => {
+    const el = trackRef.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' })
+  }
+  return (
+    <div className={styles.carousel}>
+      <div className={styles.carTrack} ref={trackRef}>
+        {images.map((img, i) => (
+          <div key={img._key} className={styles.carSlide}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`${img.url}?w=1000&auto=format&q=80`} alt={img.caption || `Asset ${i + 1}`} className={styles.carImg} />
+            {img.caption && <span className={styles.bentoLabel}>{img.caption}</span>}
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button type="button" className={`${styles.carBtn} ${styles.carPrev}`} onClick={() => nudge(-1)} aria-label="Vorige">‹</button>
+          <button type="button" className={`${styles.carBtn} ${styles.carNext}`} onClick={() => nudge(1)} aria-label="Volgende">›</button>
+        </>
+      )}
+    </div>
+  )
+}
+
+function BlockImages({ images, imageLayout, noVisualAssets }: { images: PartnerBlock['images']; imageLayout?: PartnerBlock['imageLayout']; noVisualAssets?: boolean }) {
   const { lang } = useI18n()
   const all = images ?? []
   // Filter images to the active language; untagged images show in every language.
@@ -55,31 +122,8 @@ function BlockBento({ images, noVisualAssets }: { images: PartnerBlock['images']
   const langFiltered = all.filter(img => !img.lang || img.lang === lang)
   const shown = langFiltered.length ? langFiltered : all
 
-  if (shown.length === 0) {
-    if (noVisualAssets) {
-      return (
-        <div className={styles.bentoEmpty}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M9 12h6" />
-          </svg>
-          <span>Geen visuele assets</span>
-          <span className={styles.bentoEmptySub}>voor deze activatie</span>
-        </div>
-      )
-    }
-    return (
-      <div className={styles.bentoEmpty}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <path d="m21 15-5-5L5 21" />
-        </svg>
-        <span>Campagne mockups</span>
-        <span className={styles.bentoEmptySub}>Voeg visuals toe via Studio</span>
-      </div>
-    )
-  }
+  if (shown.length === 0) return <EmptyImages noVisualAssets={noVisualAssets} />
+  if (imageLayout === 'carousel') return <BlockCarousel images={shown} />
 
   const count = Math.min(shown.length, 4)
   const pattern = BENTO_PATTERNS[count - 1]
@@ -104,8 +148,8 @@ function BlockBento({ images, noVisualAssets }: { images: PartnerBlock['images']
 // Always / optional index — two grouped jump-link lists above the per-block sections.
 function GroupedIndex({ blocks }: { blocks: PartnerBlock[] }) {
   if (blocks.length === 0) return null
-  const always = blocks.filter(b => ALWAYS_TIMINGS.has(b.timing || ''))
-  const optional = blocks.filter(b => !ALWAYS_TIMINGS.has(b.timing || ''))
+  const always = blocks.filter(isAlwaysBlock)
+  const optional = blocks.filter(b => !isAlwaysBlock(b))
 
   const renderGroup = (title: string, items: PartnerBlock[]) => {
     if (items.length === 0) return null
@@ -177,7 +221,7 @@ function BlockSection({ block, index }: { block: PartnerBlock; index: number }) 
             )}
           </div>
           <div className={styles.blockImages}>
-            <BlockBento images={block.images} noVisualAssets={block.noVisualAssets} />
+            <BlockImages images={block.images} imageLayout={block.imageLayout} noVisualAssets={block.noVisualAssets} />
           </div>
         </div>
       </div>
@@ -203,8 +247,8 @@ export function BrochurePage({ blocks }: Props) {
   // Split into the two body sections (mirrors GroupedIndex). filter() is a stable partition,
   // so the Studio orderRank is preserved within each group; `ordered` drives the hero index
   // and block numbering so the numbers stay consistent with the grouped body below.
-  const alwaysBlocks = blocks.filter(b => ALWAYS_TIMINGS.has(b.timing || ''))
-  const optionalBlocks = blocks.filter(b => !ALWAYS_TIMINGS.has(b.timing || ''))
+  const alwaysBlocks = blocks.filter(isAlwaysBlock)
+  const optionalBlocks = blocks.filter(b => !isAlwaysBlock(b))
   const ordered = [...alwaysBlocks, ...optionalBlocks]
 
   return (

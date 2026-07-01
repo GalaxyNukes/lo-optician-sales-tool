@@ -28,7 +28,7 @@ const STORAGE_KEY = 'lo-language'
 const translations = {
   nl: {
     nav: {
-      builder: 'Campagnebouwer',
+      builder: 'Briefingbouwer',
       library: 'Bibliotheek',
       brochure: 'Partnergids',
       menu: 'Activatiemenu',
@@ -64,6 +64,7 @@ const translations = {
       needQuestion: 'Wat heb je nodig?',
       customActionLabel: 'Beschrijf je actie',
       customActionPlaceholder: 'Bijv. gratis montuur bij aankoop van glazen...',
+      validFrom: 'Van wanneer is de actie geldig?',
       validUntil: 'Tot wanneer is de actie geldig?',
       scopeQuestion: 'Is de actie enkel geldig in de winkel of ook online?',
       scope: {
@@ -121,6 +122,7 @@ const translations = {
       generate: 'Briefing genereren →',
       goal: 'Doel',
       action: 'Actie',
+      validFrom: 'Geldig van',
       validUntil: 'Geldig tot',
       scope: 'Kanaal',
       need: 'Behoefte',
@@ -339,7 +341,7 @@ const translations = {
   },
   fr: {
     nav: {
-      builder: 'Créateur de campagne',
+      builder: 'Créateur de briefing',
       library: 'Bibliothèque',
       brochure: 'Guide partenaire',
       menu: "Menu d'activation",
@@ -375,6 +377,7 @@ const translations = {
       needQuestion: 'De quoi avez-vous besoin ?',
       customActionLabel: 'Décrivez votre action',
       customActionPlaceholder: 'Ex. monture gratuite à l’achat de verres...',
+      validFrom: "À partir de quand l'action est-elle valable ?",
       validUntil: "Jusqu'à quand l'action est-elle valable ?",
       scopeQuestion: "L'action est-elle valable uniquement en magasin ou aussi en ligne ?",
       scope: {
@@ -432,6 +435,7 @@ const translations = {
       generate: 'Générer le briefing →',
       goal: 'Objectif',
       action: 'Action',
+      validFrom: 'Valable à partir du',
       validUntil: "Valable jusqu'au",
       scope: 'Canal',
       need: 'Besoin',
@@ -650,7 +654,7 @@ const translations = {
   },
   en: {
     nav: {
-      builder: 'Campaign Builder',
+      builder: 'Briefing Builder',
       library: 'Library',
       brochure: 'Partner Guide',
       menu: 'Activation Menu',
@@ -686,6 +690,7 @@ const translations = {
       needQuestion: 'What do you need?',
       customActionLabel: 'Describe your action',
       customActionPlaceholder: 'E.g. free frame with lens purchase...',
+      validFrom: 'From when is the action valid?',
       validUntil: 'Until when is the action valid?',
       scopeQuestion: 'Is the action only valid in-store or also online?',
       scope: {
@@ -743,6 +748,7 @@ const translations = {
       generate: 'Generate briefing →',
       goal: 'Goal',
       action: 'Action',
+      validFrom: 'Valid from',
       validUntil: 'Valid until',
       scope: 'Channel',
       need: 'Need',

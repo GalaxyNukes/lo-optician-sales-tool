@@ -20,6 +20,7 @@ interface Props {
   selGoal: Goal | null
   selAction: Action | null
   customAction: string
+  actionValidFrom: string
   actionValidUntil: string
   actionScope: string
   selSubjects: Subject[]
@@ -46,6 +47,7 @@ export function SummaryModal({
   selGoal,
   selAction,
   customAction,
+  actionValidFrom,
   actionValidUntil,
   actionScope,
   selSubjects,
@@ -86,6 +88,7 @@ export function SummaryModal({
     sharedFields.title && { label: sharedFields.title, cat: core.title },
     selGoal && { label: selGoal.label, cat: copy.summary.goal },
     selAction && { label: selAction.isCustom && customAction ? customAction : selAction.label, cat: copy.summary.action },
+    actionValidFrom && { label: actionValidFrom, cat: copy.summary.validFrom },
     actionValidUntil && { label: actionValidUntil, cat: copy.summary.validUntil },
     actionScope && { label: translateScope(actionScope), cat: copy.summary.scope },
     assetBriefings.length > 0 && { label: assetBriefings.map(b => blockLabel(b.blockKey)).join(', '), cat: copy.summary.assetsCat },
@@ -144,6 +147,7 @@ export function SummaryModal({
       { label: copy.summary.goal, value: selGoal?.label || copy.common.noData, big: true },
       { label: copy.summary.action, value: selAction?.isCustom && customAction ? customAction : selAction?.label || copy.common.noData },
       { label: copy.summary.assetsCat, value: assetBriefings.map(b => blockLabel(b.blockKey)).join(', ') || copy.common.noData },
+      { label: copy.summary.validFrom, value: actionValidFrom || copy.common.noData },
       { label: copy.summary.validUntil, value: actionValidUntil || copy.common.noData },
       { label: copy.summary.scope, value: actionScope ? translateScope(actionScope) : copy.common.noData },
       { label: core.owner, value: sharedFields.owner || copy.common.noData },

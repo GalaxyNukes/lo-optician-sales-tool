@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Logo } from './Logo'
 import type { PartnerBlock, CategoryValues } from './BrochurePage'
+import { isAlwaysBlock } from './BrochurePage'
 import styles from './MenuPage.module.css'
 
 type Cat = 'a' | 'b' | 'c'
@@ -24,8 +25,6 @@ const TIMING_CLASS: Record<string, string> = {
   request:     'timingCond',
   ongoing:     'timingAlways',
 }
-
-const ALWAYS_TIMINGS = new Set(['always', 'ongoing', 'seasonal'])
 
 const CAT_LABELS: Record<Cat, string> = { a: 'Categorie A', b: 'Categorie B', c: 'Categorie C' }
 
@@ -229,14 +228,14 @@ export function MenuPage({ blocks, initialCategorie }: { blocks: PartnerBlock[];
   }
 
   const visible = blocks.filter((block) => visibleInCategory(cat, block))
-  const alwaysBlocks = visible.filter((block) => ALWAYS_TIMINGS.has(block.timing || ''))
-  const optionalBlocks = visible.filter((block) => !ALWAYS_TIMINGS.has(block.timing || ''))
+  const alwaysBlocks = visible.filter(isAlwaysBlock)
+  const optionalBlocks = visible.filter((block) => !isAlwaysBlock(block))
 
   const activeCmpTiers = CMP_ORDER.filter((t) => cmpTiers[t])
   const cmpVisible = blocks.filter((block) => activeCmpTiers.some((t) => visibleInCategory(t, block)))
   const cmpFilter = (b: PartnerBlock) => !onlyDiff || cmpAvailabilityDiffers(activeCmpTiers, b)
-  const cmpAlways = cmpVisible.filter((b) => ALWAYS_TIMINGS.has(b.timing || '')).filter(cmpFilter)
-  const cmpOptional = cmpVisible.filter((b) => !ALWAYS_TIMINGS.has(b.timing || '')).filter(cmpFilter)
+  const cmpAlways = cmpVisible.filter(isAlwaysBlock).filter(cmpFilter)
+  const cmpOptional = cmpVisible.filter((b) => !isAlwaysBlock(b)).filter(cmpFilter)
 
   return (
     <div className={`${styles.root} ${printMode ? styles.printMode : ''}`}>

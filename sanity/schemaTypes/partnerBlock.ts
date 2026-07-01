@@ -119,6 +119,21 @@ export const partnerBlock = defineType({
       }],
     }),
     defineField({
+      name: 'imageLayout',
+      title: 'Beeldweergave (Partnergids)',
+      type: 'string',
+      group: 'media',
+      options: {
+        list: [
+          { title: 'Raster (bento grid)', value: 'grid' },
+          { title: 'Carrousel (horizontaal scrollen)', value: 'carousel' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'grid',
+      description: 'Hoe de beelden van dit blok getoond worden op de Partnergids.',
+    }),
+    defineField({
       name: 'noVisualAssets',
       title: 'Heeft bewust geen visuals',
       type: 'boolean',
@@ -143,6 +158,20 @@ export const partnerBlock = defineType({
       },
       initialValue: 'C',
       description: 'Cascade: C-blokken zijn zichtbaar in alle 3 schermen, B-blokken in B+A, A-blokken enkel in A.',
+    }),
+    defineField({
+      name: 'section',
+      title: 'Sectie',
+      type: 'string',
+      group: 'menu',
+      options: {
+        list: [
+          { title: 'Wat we altijd voor je doen', value: 'always' },
+          { title: 'Wat je kan activeren op aanvraag', value: 'request' },
+        ],
+        layout: 'radio',
+      },
+      description: 'Bepaalt onder welke sectie dit blok verschijnt op de Partnergids & het Activatiemenu. Leeg = automatisch bepaald via Timing. Sleep blokken in de lijst om de volgorde te bepalen.',
     }),
     defineField({
       name: 'timing',

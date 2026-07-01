@@ -307,6 +307,50 @@
   backdrop-filter: blur(4px);
 }
 
+/* ── Carousel (per-block imageLayout = 'carousel') ─────────────────────────── */
+.carousel { position: relative; }
+.carTrack {
+  display: flex;
+  gap: .75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: .5rem;
+  scrollbar-width: thin;
+}
+.carSlide {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  background: var(--surface);
+}
+.carImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--bdr);
+  background: var(--elev);
+  color: var(--navy);
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px var(--shadow-c);
+  transition: background .15s, border-color .15s;
+}
+.carBtn:hover { border-color: var(--navy); background: var(--surface); }
+.carPrev { left: 8px; }
+.carNext { right: 8px; }
+
 .bentoEmpty {
   height: 320px;
   border-radius: 10px;

@@ -164,6 +164,8 @@ export const partnerBlocksQuery = groq`
     description,
     deliverables,
     warning,
+    section,
+    imageLayout,
     "images": images[] {
       _key,
       caption,
